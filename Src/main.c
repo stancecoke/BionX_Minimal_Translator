@@ -42,6 +42,8 @@
 
 /* USER CODE BEGIN Includes */
 
+
+#include "display_kunteng.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -75,6 +77,9 @@ static void MX_ADC1_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+uint8_t ui8_UART_flag=0;
+uint8_t ui8_UART_Counter=0;
+MotorState_t MS;
 
 /* USER CODE END 0 */
 
@@ -113,14 +118,26 @@ int main(void)
   MX_TIM1_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-
+  kunteng_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if(ui8_UART_flag){
 
+
+
+	  	  ui8_UART_Counter++;
+	  	  if(ui8_UART_Counter>5){
+	  	  check_message(&MS);
+	  	  ui8_UART_Counter=0;
+	  	  }
+
+
+	  	  ui8_UART_flag=0;
+	  	  }
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */

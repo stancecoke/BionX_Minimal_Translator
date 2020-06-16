@@ -58,6 +58,26 @@
 
 /* USER CODE BEGIN Private defines */
 
+#include <stdint.h>
+#define CAL_BAT_V 1
+#define PULSES_PER_REVOLUTION 1
+
+typedef struct
+{
+
+	uint32_t       	Voltage;
+	uint32_t       	Speed;
+	uint32_t          	i_d;
+	uint32_t          	i_q;
+	uint32_t          	u_d;
+	uint32_t          	u_q;
+	uint32_t          	u_abs;
+	uint32_t          	Battery_Current;
+	uint8_t 		hall_angle_detect_flag;
+	uint8_t 		char_dyn_adc_state;
+	uint8_t 		assist_level;
+
+}MotorState_t;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
