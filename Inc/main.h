@@ -49,6 +49,17 @@
 
 /* Private define ------------------------------------------------------------*/
 
+#define Board_LED_Pin GPIO_PIN_13
+#define Board_LED_GPIO_Port GPIOC
+#define BatteryVoltage_Pin GPIO_PIN_0
+#define BatteryVoltage_GPIO_Port GPIOA
+#define BatteryCurrent_Pin GPIO_PIN_1
+#define BatteryCurrent_GPIO_Port GPIOA
+#define TorqueFromExternalSensor_Pin GPIO_PIN_2
+#define TorqueFromExternalSensor_GPIO_Port GPIOA
+#define PASFromExternalSensor_Pin GPIO_PIN_3
+#define PASFromExternalSensor_GPIO_Port GPIOA
+
 /* ########################## Assert Selection ############################## */
 /**
   * @brief Uncomment the line below to expanse the "assert_param" macro in the 
