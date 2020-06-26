@@ -11,6 +11,7 @@
 void kunteng_init();
 void display_update(MotorState_t* MS_U);
 void check_message(MotorState_t* MS_D);
+uint8_t GetRXBuffer();
 
 typedef struct _lcd_configuration_variables
 {

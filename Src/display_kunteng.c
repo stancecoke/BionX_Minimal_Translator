@@ -28,10 +28,14 @@ volatile struc_lcd_configuration_variables lcd_configuration_variables;
 UART_HandleTypeDef huart1;
 
 
+uint8_t GetRXBuffer(){
+	return ui8_rx_buffer[0];
+}
+
 void kunteng_init()
 {
-
-    if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)ui8_rx_buffer, 13) != HAL_OK)
+//Start UART with DMA (bufferlenght = 1 for debugging)
+    if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)ui8_rx_buffer, 1) != HAL_OK)
      {
  	   Error_Handler();
      }

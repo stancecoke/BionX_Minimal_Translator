@@ -26,6 +26,7 @@
 
 
 #include "display_kunteng.h"
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -36,6 +37,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define BXID_MOTOR            0x20
+#define BXR_MOTOR_LEVEL       0x09
+#define BXR_MOTOR_SWVERS      0x20
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -64,8 +68,10 @@ uint8_t               TxData[8];
 uint8_t               RxData[8];
 uint32_t              TxMailbox;
 uint8_t ui8_UART_flag=0;
+uint8_t i=0;
 uint8_t ui8_UART_Counter=0;
 MotorState_t MS;
+char buffer[100];
 
 /* USER CODE END PV */
 
@@ -123,6 +129,14 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   kunteng_init();
+
+	 sprintf(buffer, "BionX Minimum Translator v0.0\r\n System initialisiert!\r\n");
+
+	  i=0;
+	  while (buffer[i] != '\0')
+	  {i++;}
+	  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&buffer, i);
+	  HAL_Delay(10);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -133,28 +147,54 @@ int main(void)
 
 
 
-	  	  ui8_UART_Counter++;
+	  	/*  ui8_UART_Counter++;
 	  	  if(ui8_UART_Counter>5){
-	  	  check_message(&MS);
+	  		  //check_message(&MS);
+
+
 	  	  ui8_UART_Counter=0;
-	  	  }
-
-
-	  	  ui8_UART_flag=0;
-	  	  }
+	  	  }*/
 
 	  	  	 //send CAN message
+		  /*
+		  bool WriteBionxReg(int canid, uint16_t addr, uint16_t value)
+		  {
+		    CanMsg aMsg;
+		    aMsg.id=canid;
+		    aMsg.dlc=4;
+		    aMsg.data[0]=0;
+		    aMsg.data[1]=addr;
+		    aMsg.data[2]=(value>>8) & 0xff;
+		    aMsg.data[3]=value & 0xff;
+		    return aCan.Write(aMsg, 10000);
+		  }*/
+		  //Zum debuggen das über UART empfangene Byte als Sollwert für den Motorlevel an den Controller senden.
+		  	  TxHeader.StdId=BXID_MOTOR;
+		  	  TxHeader.DLC=4;
+		  	  TxData[0] = 0;
+	  	  	  TxData[1] = BXR_MOTOR_LEVEL;
+	          TxData[2] = (GetRXBuffer()>>8) & 0xff;
+	          TxData[3] = GetRXBuffer() & 0xff;
 
-	  TxData[0] = ubKeyNumber;
-	          TxData[1] = 0xAD;
-
-	          /* Start the Transmission process */
+	          /* Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive */
 	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
 	          {
 	            /* Transmission request Error */
 	            Error_Handler();
 	          }
 	          HAL_Delay(10);
+
+	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+	          {
+	            /* Transmission request Error */
+	            Error_Handler();
+	          }
+	          HAL_Delay(10);
+
+	  	  ui8_UART_flag=0;
+	  	  }
+
+
 
     /* USER CODE END WHILE */
 
@@ -421,6 +461,13 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+//Processing of UART RX interrupt
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
+{
+	ui8_UART_flag=1;
+
+}
+//Processing of Can RX interrupt
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
 {
   /* Get RX message */
@@ -430,12 +477,16 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
     Error_Handler();
   }
 
-  /* Display LEDx */
-  if ((RxHeader.StdId == 0x321) && (RxHeader.IDE == CAN_ID_STD) && (RxHeader.DLC == 2))
-  {
+//print CAN message to UART for debugging.
 
-    ubKeyNumber = RxData[0];
-  }
+	 sprintf(buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
+
+	  i=0;
+	  while (buffer[i] != '\0')
+	  {i++;}
+	  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&buffer, i);
+
+
 }
 
 /* USER CODE END 4 */
