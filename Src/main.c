@@ -109,14 +109,17 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  sprintf(UART_TX_Buffer, "BionX Minimum Translator v0.0\r\n System initialisiert!\r\n");
+	  sprintf(UART_TX_Buffer, "BionX Minimum Translator v0.0\r\n");
 
-	  	  i=0;
-	  	  while (UART_TX_Buffer[i] != '\0')
-	  	  {i++;}
-	  	  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+	    	  i=0;
+	    	  while (UART_TX_Buffer[i] != '\0')
+	    	  {i++;}
+	    	  HAL_UART_IRQHandler(&huart1);
+	    	  HAL_Delay(50);
+	    	 // HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 	  	  HAL_Delay(500);
-	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	  	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -277,7 +280,28 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* Toogle LED2 : Transfer in transmission process is correct */
+	HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	HAL_UART_IRQHandler(&huart1);
 
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* Toogle LED2 : Transfer in transmission process is correct */
+	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	  sprintf(UART_TX_Buffer, "Empfangenes Byte %d\r\n",UART_RX_Buffer[0]);
+
+	  	  i=0;
+	  	  while (UART_TX_Buffer[i] != '\0')
+	  	  {i++;}
+
+	  	HAL_UART_IRQHandler(&huart1);
+	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+
+}
 /* USER CODE END 4 */
 
 /**
