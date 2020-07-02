@@ -55,6 +55,7 @@ char UART_TX_Buffer[100];
 char UART_RX_Buffer[100];
 uint8_t i=0;
 uint8_t UART_RX_Flag=0;
+uint8_t CAN_RX_Flag=0;
 
 uint8_t ubKeyNumber = 0x0;
 CAN_HandleTypeDef     CanHandle;
@@ -112,6 +113,30 @@ int main(void)
   MX_CAN_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  /*bool ReadBionxReg(int canid, uint16_t addr, uint16_t &ret )
+  {
+    CanMsg aMsg;
+    aMsg.id=canid;
+    aMsg.dlc=2;
+    aMsg.data[0]=0;
+    aMsg.data[1]=addr;
+    aCan.Write(aMsg);*/
+  TxHeader.StdId=BXID_MOTOR;
+  	  	  	  TxHeader.DLC=2;
+  	  	  	  TxData[0] = 0;
+  	  	  	  TxData[1] = BXR_MOTOR_SWVERS;
+
+  	          /* Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive */
+  	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+  	          {
+  	            /* Transmission request Error */
+  	            Error_Handler();
+  	          }
+  	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+  	          {
+  	            /* Transmission request Error */
+  	            Error_Handler();
+  	          }
 
   /* USER CODE END 2 */
 
@@ -149,6 +174,17 @@ int main(void)
 	            /* Transmission request Error */
 	            Error_Handler();
 	          }
+	  }
+
+	  if(CAN_RX_Flag){
+		 //print out received CAN message
+		 sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
+
+		  i=0;
+		  while (UART_TX_Buffer[i] != '\0')
+		  {i++;}
+		  HAL_UART_IRQHandler(&huart1);
+		  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 	  }
     /* USER CODE END WHILE */
 
@@ -364,6 +400,19 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	UART_RX_Flag=1;
+
+}
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
+{
+  /* Get RX message */
+  if (HAL_CAN_GetRxMessage(CanHandle, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
+  {
+    /* Reception Error */
+    Error_Handler();
+  }
+
+  CAN_RX_Flag=1;
 
 }
 /* USER CODE END 4 */
