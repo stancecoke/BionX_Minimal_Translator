@@ -33,7 +33,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define BXID_MOTOR            0x20
+#define BXR_MOTOR_LEVEL       0x09
+#define BXR_MOTOR_SWVERS      0x20
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -52,6 +54,15 @@ DMA_HandleTypeDef hdma_usart1_tx;
 char UART_TX_Buffer[100];
 char UART_RX_Buffer[100];
 uint8_t i=0;
+uint8_t UART_RX_Flag=0;
+
+uint8_t ubKeyNumber = 0x0;
+CAN_HandleTypeDef     CanHandle;
+CAN_TxHeaderTypeDef   TxHeader;
+CAN_RxHeaderTypeDef   RxHeader;
+uint8_t               TxData[8];
+uint8_t               RxData[8];
+uint32_t              TxMailbox;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -108,17 +119,40 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-	  sprintf(UART_TX_Buffer, "BionX Minimum Translator v0.0\r\n");
+	  if(UART_RX_Flag){
+		  UART_RX_Flag=0;
+		  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	  	  sprintf(UART_TX_Buffer, "Empfangenes Byte %d\r\n",UART_RX_Buffer[0]);
 
-	    	  i=0;
-	    	  while (UART_TX_Buffer[i] != '\0')
-	    	  {i++;}
-	    	  HAL_UART_IRQHandler(&huart1);
-	    	  HAL_Delay(50);
-	    	 // HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
-	  	  HAL_Delay(500);
-	  	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	  	  	  i=0;
+	  	  	  while (UART_TX_Buffer[i] != '\0')
+	  	  	  {i++;}
+
+	  	  	HAL_UART_IRQHandler(&huart1);
+	  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+
+	  	  	  TxHeader.StdId=BXID_MOTOR;
+	  	  	  TxHeader.DLC=4;
+	  	  	  TxData[0] = 0;
+	  	  	  TxData[1] = BXR_MOTOR_LEVEL;
+	          TxData[2] = (UART_RX_Buffer[0]>>8) & 0xff;
+	          TxData[3] = UART_RX_Buffer[0] & 0xff;
+
+	          /* Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive */
+	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+	          {
+	            /* Transmission request Error */
+	            Error_Handler();
+	          }
+	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+	          {
+	            /* Transmission request Error */
+	            Error_Handler();
+	          }
+	  }
+    /* USER CODE END WHILE */
+
+	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 
     /* USER CODE BEGIN 3 */
   }
@@ -194,7 +228,47 @@ static void MX_CAN_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN CAN_Init 2 */
+  /* USER CODE BEGIN CAN_Init 2 */
+  /*##-2- Configure the CAN Filter ###########################################*/
+  	CAN_FilterTypeDef  sFilterConfig;
+    sFilterConfig.FilterBank = 0;
+    sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+    sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+    sFilterConfig.FilterIdHigh = 0x0000;
+    sFilterConfig.FilterIdLow = 0x0000;
+    sFilterConfig.FilterMaskIdHigh = 0x0000;
+    sFilterConfig.FilterMaskIdLow = 0x0000;
+    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+    sFilterConfig.FilterActivation = ENABLE;
+    sFilterConfig.SlaveStartFilterBank = 14;
 
+    if (HAL_CAN_ConfigFilter(&CanHandle, &sFilterConfig) != HAL_OK)
+    {
+      /* Filter configuration Error */
+      Error_Handler();
+    }
+
+    /*##-3- Start the CAN peripheral ###########################################*/
+    if (HAL_CAN_Start(&CanHandle) != HAL_OK)
+    {
+      /* Start Error */
+      Error_Handler();
+    }
+
+    /*##-4- Activate CAN RX notification #######################################*/
+    if (HAL_CAN_ActivateNotification(&CanHandle, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+    {
+      /* Notification Error */
+      Error_Handler();
+    }
+
+    /*##-5- Configure Transmission process #####################################*/
+    TxHeader.StdId = BXID_MOTOR;
+    TxHeader.ExtId = 0x01;
+    TxHeader.RTR = CAN_RTR_DATA;
+    TxHeader.IDE = CAN_ID_STD;
+    TxHeader.DLC = 4;
+    TxHeader.TransmitGlobalTime = DISABLE;
   /* USER CODE END CAN_Init 2 */
 
 }
@@ -282,24 +356,14 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-  /* Toogle LED2 : Transfer in transmission process is correct */
+
 	HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
-	HAL_UART_IRQHandler(&huart1);
 
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-  /* Toogle LED2 : Transfer in transmission process is correct */
-	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
-	  sprintf(UART_TX_Buffer, "Empfangenes Byte %d\r\n",UART_RX_Buffer[0]);
-
-	  	  i=0;
-	  	  while (UART_TX_Buffer[i] != '\0')
-	  	  {i++;}
-
-	  	HAL_UART_IRQHandler(&huart1);
-	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+	UART_RX_Flag=1;
 
 }
 /* USER CODE END 4 */
