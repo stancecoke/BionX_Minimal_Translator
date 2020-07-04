@@ -58,7 +58,7 @@ uint8_t UART_RX_Flag=0;
 uint8_t CAN_RX_Flag=0;
 
 uint8_t ubKeyNumber = 0x0;
-CAN_HandleTypeDef     CanHandle;
+
 CAN_TxHeaderTypeDef   TxHeader;
 CAN_RxHeaderTypeDef   RxHeader;
 uint8_t               TxData[8];
@@ -121,22 +121,7 @@ int main(void)
     aMsg.data[0]=0;
     aMsg.data[1]=addr;
     aCan.Write(aMsg);*/
-  TxHeader.StdId=BXID_MOTOR;
-  	  	  	  TxHeader.DLC=2;
-  	  	  	  TxData[0] = 0;
-  	  	  	  TxData[1] = BXR_MOTOR_SWVERS;
 
-  	          /* Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive */
-  	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-  	          {
-  	            /* Transmission request Error */
-  	            Error_Handler();
-  	          }
-  	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-  	          {
-  	            /* Transmission request Error */
-  	            Error_Handler();
-  	          }
 
   /* USER CODE END 2 */
 
@@ -147,38 +132,59 @@ int main(void)
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
 		  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
-	  	  sprintf(UART_TX_Buffer, "Empfangenes Byte %d\r\n",UART_RX_Buffer[0]);
 
-	  	  	  i=0;
-	  	  	  while (UART_TX_Buffer[i] != '\0')
-	  	  	  {i++;}
 
-	  	  	HAL_UART_IRQHandler(&huart1);
-	  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
-
-	  	  	  TxHeader.StdId=BXID_MOTOR;
+	  	  	 /* TxHeader.StdId=BXID_MOTOR;
 	  	  	  TxHeader.DLC=4;
 	  	  	  TxData[0] = 0;
 	  	  	  TxData[1] = BXR_MOTOR_LEVEL;
 	          TxData[2] = (UART_RX_Buffer[0]>>8) & 0xff;
 	          TxData[3] = UART_RX_Buffer[0] & 0xff;
 
-	          /* Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive */
+	          // Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive
 	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
 	          {
-	            /* Transmission request Error */
+	            // Transmission request Error
 	            Error_Handler();
 	          }
 	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
 	          {
-	            /* Transmission request Error */
+	            // Transmission request Error
 	            Error_Handler();
-	          }
+	          }*/
+
+	  	  TxHeader.StdId=BXID_MOTOR;
+	  	    TxHeader.DLC=2;
+	  	    TxData[0] = 0;
+	  	    TxData[1] = BXR_MOTOR_SWVERS;
+
+	  	    /* Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive */
+	  	    if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+	  	    	{
+	  	    	  /* Transmission request Error */
+	  	    	  Error_Handler();
+	  	    	}
+
+	  		HAL_Delay(500);
+		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d\r\n",UART_RX_Buffer[0]);
+
+		  	  	  i=0;
+		  	  	  while (UART_TX_Buffer[i] != '\0')
+		  	  	  {i++;}
+
+		  	  	HAL_UART_IRQHandler(&huart1);
+		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+
 	  }
 
+
+
 	  if(CAN_RX_Flag){
-		 //print out received CAN message
-		 sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
+
+		  CAN_RX_Flag=0;
+
+		  //print out received CAN message
+		  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
 
 		  i=0;
 		  while (UART_TX_Buffer[i] != '\0')
@@ -278,21 +284,21 @@ static void MX_CAN_Init(void)
     sFilterConfig.FilterActivation = ENABLE;
     sFilterConfig.SlaveStartFilterBank = 14;
 
-    if (HAL_CAN_ConfigFilter(&CanHandle, &sFilterConfig) != HAL_OK)
+    if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK)
     {
       /* Filter configuration Error */
       Error_Handler();
     }
 
     /*##-3- Start the CAN peripheral ###########################################*/
-    if (HAL_CAN_Start(&CanHandle) != HAL_OK)
+    if (HAL_CAN_Start(&hcan) != HAL_OK)
     {
       /* Start Error */
       Error_Handler();
     }
 
     /*##-4- Activate CAN RX notification #######################################*/
-    if (HAL_CAN_ActivateNotification(&CanHandle, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+    if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
     {
       /* Notification Error */
       Error_Handler();
@@ -393,7 +399,7 @@ static void MX_GPIO_Init(void)
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 
-	HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 
 }
 
@@ -406,6 +412,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
 {
   /* Get RX message */
+	HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
   if (HAL_CAN_GetRxMessage(CanHandle, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
   {
     /* Reception Error */
