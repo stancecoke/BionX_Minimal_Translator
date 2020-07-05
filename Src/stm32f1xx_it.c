@@ -42,7 +42,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+extern CAN_HandleTypeDef    hcan;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -227,6 +227,14 @@ void DMA1_Channel5_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+void USB_LP_CAN1_RX0_IRQHandler(void)
+{
+  HAL_CAN_IRQHandler(&hcan);
+}
 
+void USB_HP_CAN1_TX_IRQHandler(void)
+{
+  HAL_CAN_IRQHandler(&hcan);
+}
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

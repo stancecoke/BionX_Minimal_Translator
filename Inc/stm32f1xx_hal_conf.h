@@ -154,6 +154,8 @@
   */
 /* #define USE_FULL_ASSERT    1U */
 
+
+
 /* ################## Ethernet peripheral configuration ##################### */
 
 /* Section 1 : Ethernet peripheral configuration */
