@@ -165,8 +165,8 @@ int main(void)
 	  	    	  Error_Handler();
 	  	    	}
 
-	  		HAL_Delay(500);
-		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d\r\n",UART_RX_Buffer[0]);
+
+		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %d\r\n",UART_RX_Buffer[0], HAL_CAN_GetState(&hcan));
 
 		  	  	  i=0;
 		  	  	  while (UART_TX_Buffer[i] != '\0')
@@ -306,6 +306,12 @@ static void MX_CAN_Init(void)
       Error_Handler();
     }
 
+    if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_TX_MAILBOX_EMPTY) != HAL_OK)
+    {
+      /* Notification Error */
+      Error_Handler();
+    }
+
     /*##-5- Configure Transmission process #####################################*/
     TxHeader.StdId = BXID_MOTOR;
     TxHeader.ExtId = 0x01;
@@ -369,11 +375,6 @@ static void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
-  HAL_NVIC_SetPriority(USB_HP_CAN1_TX_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(USB_HP_CAN1_TX_IRQn);
-  HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn , 0, 0);
-  HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn );
-
 }
 
 /**
@@ -419,7 +420,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
 {
   /* Get RX message */
-	HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
   if (HAL_CAN_GetRxMessage(CanHandle, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
   {
     /* Reception Error */
