@@ -56,6 +56,7 @@ char UART_RX_Buffer[100];
 uint8_t i=0;
 uint8_t UART_RX_Flag=0;
 uint8_t CAN_RX_Flag=0;
+uint8_t CAN_TX_Flag=0;
 
 uint8_t ubKeyNumber = 0x0;
 
@@ -121,7 +122,21 @@ int main(void)
     aMsg.data[0]=0;
     aMsg.data[1]=addr;
     aCan.Write(aMsg);*/
+  while(!CAN_RX_Flag){ //So lange Versionsanfrage senden, bis Antwort vom BionX-Controller kommt, dabei blinken.
+  	  HAL_Delay(200);
+	  TxHeader.StdId=BXID_MOTOR;
+	    TxHeader.DLC=2;
+	    TxData[0] = 0;
+	    TxData[1] = BXR_MOTOR_SWVERS;
 
+	    HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	    if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+	    	{
+	    	  /* Transmission request Error */
+	    	  Error_Handler();
+	    	}
+
+  }
 
   /* USER CODE END 2 */
 
@@ -129,44 +144,32 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+	  TxHeader.StdId=BXID_MOTOR;
+	  TxHeader.DLC=4;
+	  TxData[0] = 0;
+	  TxData[1] = BXR_MOTOR_LEVEL;
+      TxData[2] = (UART_RX_Buffer[0]>>8) & 0xff;
+      TxData[3] = UART_RX_Buffer[0] & 0xff;
+
+      // Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive
+      if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+      {
+        // Transmission request Error
+        Error_Handler();
+      }
+      if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+      {
+        // Transmission request Error
+        Error_Handler();
+      }
+
+      HAL_Delay(200);
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
-		  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 
-
-	  	  	 /* TxHeader.StdId=BXID_MOTOR;
-	  	  	  TxHeader.DLC=4;
-	  	  	  TxData[0] = 0;
-	  	  	  TxData[1] = BXR_MOTOR_LEVEL;
-	          TxData[2] = (UART_RX_Buffer[0]>>8) & 0xff;
-	          TxData[3] = UART_RX_Buffer[0] & 0xff;
-
-	          // Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive
-	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-	          {
-	            // Transmission request Error
-	            Error_Handler();
-	          }
-	          if (HAL_CAN_AddTxMessage(&CanHandle, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-	          {
-	            // Transmission request Error
-	            Error_Handler();
-	          }*/
-
-	  	  TxHeader.StdId=BXID_MOTOR;
-	  	    TxHeader.DLC=2;
-	  	    TxData[0] = 0;
-	  	    TxData[1] = BXR_MOTOR_SWVERS;
-
-	  	    /* Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive */
-	  	    if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-	  	    	{
-	  	    	  /* Transmission request Error */
-	  	    	  Error_Handler();
-	  	    	}
-
-
-		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %d\r\n",UART_RX_Buffer[0], HAL_CAN_GetState(&hcan));
+		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %lu, %d\r\n",UART_RX_Buffer[0],CAN1->TSR, HAL_CAN_GetState(&hcan));
 
 		  	  	  i=0;
 		  	  	  while (UART_TX_Buffer[i] != '\0')
@@ -417,6 +420,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 }
 
+
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
 {
   /* Get RX message */
@@ -430,6 +434,16 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
   CAN_RX_Flag=1;
 
 }
+
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *CanHandle)
+{
+
+
+  CAN_TX_Flag=1;
+
+}
+
+
 /* USER CODE END 4 */
 
 /**

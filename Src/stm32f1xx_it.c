@@ -236,7 +236,7 @@ void USB_HP_CAN1_TX_IRQHandler(void)
   /* USER CODE END USB_HP_CAN1_TX_IRQn 0 */
   HAL_CAN_IRQHandler(&hcan);
   /* USER CODE BEGIN USB_HP_CAN1_TX_IRQn 1 */
-  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+
   /* USER CODE END USB_HP_CAN1_TX_IRQn 1 */
 }
 
@@ -250,7 +250,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
   /* USER CODE END USB_LP_CAN1_RX0_IRQn 0 */
   HAL_CAN_IRQHandler(&hcan);
   /* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 1 */
-  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+
   /* USER CODE END USB_LP_CAN1_RX0_IRQn 1 */
 }
 
