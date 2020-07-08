@@ -164,7 +164,7 @@ int main(void)
         Error_Handler();
       }
 
-      HAL_Delay(200);
+      HAL_Delay(20);
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
 		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
