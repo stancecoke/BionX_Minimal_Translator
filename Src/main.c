@@ -44,7 +44,12 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
+
 CAN_HandleTypeDef hcan;
+
+TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_rx;
@@ -57,8 +62,13 @@ uint8_t i=0;
 uint8_t UART_RX_Flag=0;
 uint8_t CAN_RX_Flag=0;
 uint8_t CAN_TX_Flag=0;
+uint8_t Timer3_Flag=0;
+uint8_t ADC_Flag=0;
 
-uint8_t ubKeyNumber = 0x0;
+uint16_t ui16_slow_loop_counter=0;
+volatile uint16_t adcData[3]; //Buffer for ADC1 Input
+
+
 
 CAN_TxHeaderTypeDef   TxHeader;
 CAN_RxHeaderTypeDef   RxHeader;
@@ -73,6 +83,8 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_CAN_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_ADC1_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -113,6 +125,26 @@ int main(void)
   MX_DMA_Init();
   MX_CAN_Init();
   MX_USART1_UART_Init();
+  MX_ADC1_Init();
+  /* Run the ADC calibration */
+  if (HAL_ADCEx_Calibration_Start(&hadc1) != HAL_OK)
+  {
+    /* Calibration Error */
+    Error_Handler();
+  }
+
+  MX_TIM3_Init();
+
+  // Start Timer 3
+
+  if(HAL_TIM_Base_Start_IT(&htim3) != HAL_OK)
+       {
+         /* Counter Enable Error */
+         Error_Handler();
+       }
+  // Start ADC1 with DMA
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcData, 3);
+
   /* USER CODE BEGIN 2 */
   /*bool ReadBionxReg(int canid, uint16_t addr, uint16_t &ret )
   {
@@ -122,6 +154,7 @@ int main(void)
     aMsg.data[0]=0;
     aMsg.data[1]=addr;
     aCan.Write(aMsg);*/
+  /*
   while(!CAN_RX_Flag){ //So lange Versionsanfrage senden, bis Antwort vom BionX-Controller kommt, dabei blinken.
   	  HAL_Delay(200);
 	  TxHeader.StdId=BXID_MOTOR;
@@ -132,11 +165,11 @@ int main(void)
 	    HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 	    if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
 	    	{
-	    	  /* Transmission request Error */
+
 	    	  Error_Handler();
 	    	}
 
-  }
+  }*/
 
   /* USER CODE END 2 */
 
@@ -145,26 +178,9 @@ int main(void)
   while (1)
   {
 
-	  TxHeader.StdId=BXID_MOTOR;
-	  TxHeader.DLC=4;
-	  TxData[0] = 0;
-	  TxData[1] = BXR_MOTOR_LEVEL;
-      TxData[2] = (UART_RX_Buffer[0]>>8) & 0xff;
-      TxData[3] = UART_RX_Buffer[0] & 0xff;
 
-      // Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive
-      if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-      {
-        // Transmission request Error
-        Error_Handler();
-      }
-      if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-      {
-        // Transmission request Error
-        Error_Handler();
-      }
 
-      HAL_Delay(20);
+
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
 		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
@@ -179,6 +195,50 @@ int main(void)
 		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 
 	  }
+
+	  //Timer 3 running with 1kHz ISR frequency
+	  if(Timer3_Flag){
+
+		  Timer3_Flag=0;
+		  ui16_slow_loop_counter++;
+
+		  TxHeader.StdId=BXID_MOTOR;
+		  	  TxHeader.DLC=4;
+		  	  TxData[0] = 0;
+		  	  TxData[1] = BXR_MOTOR_LEVEL;
+		        TxData[2] = (UART_RX_Buffer[0]>>8) & 0xff;
+		        TxData[3] = UART_RX_Buffer[0] & 0xff;
+
+		        // Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive
+		        if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+		        {
+		          // Transmission request Error
+		          Error_Handler();
+		        }
+		        if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+		        {
+		          // Transmission request Error
+		          Error_Handler();
+		        }
+
+		  if (ui16_slow_loop_counter>1000){
+			  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+			  ui16_slow_loop_counter=0;
+			  if (ADC_Flag){
+				  ADC_Flag=0;
+				  sprintf(UART_TX_Buffer, "ADC Values %d, %d, %d\r\n",adcData[0], adcData[1], adcData[2]);
+
+				  		  	  	  i=0;
+				  		  	  	  while (UART_TX_Buffer[i] != '\0')
+				  		  	  	  {i++;}
+
+				  		  	  	HAL_UART_IRQHandler(&huart1);
+				  		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+
+			  }
+		  }
+
+		  }
 
 
 
@@ -327,6 +387,51 @@ static void MX_CAN_Init(void)
 }
 
 /**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 512;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 139;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_OC1;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -367,16 +472,19 @@ static void MX_USART1_UART_Init(void)
   */
 static void MX_DMA_Init(void) 
 {
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
+	  /* DMA controller clock enable */
+	  __HAL_RCC_DMA1_CLK_ENABLE();
 
-  /* DMA interrupt init */
-  /* DMA1_Channel4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
-  /* DMA1_Channel5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+	  /* DMA interrupt init */
+	  /* DMA1_Channel1_IRQn interrupt configuration */
+	  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+	  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+	  /* DMA1_Channel4_IRQn interrupt configuration */
+	  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
+	  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+	  /* DMA1_Channel5_IRQn interrupt configuration */
+	  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
+	  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
 }
 
@@ -403,6 +511,60 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(Onboard_LED_GPIO_Port, &GPIO_InitStruct);
+
+}
+
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+  /** Common config
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_TRGO;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Rank = ADC_REGULAR_RANK_2;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfig.Channel = ADC_CHANNEL_2;
+  sConfig.Rank = ADC_REGULAR_RANK_3;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
 
 }
 
@@ -440,6 +602,21 @@ void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *CanHandle)
 
 
   CAN_TX_Flag=1;
+
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim == &htim3) {
+		Timer3_Flag=1;
+
+	}
+}
+
+// regular ADC callback
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	ADC_Flag=1;
 
 }
 
