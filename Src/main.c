@@ -36,6 +36,7 @@
 #define BXID_MOTOR            0x20
 #define BXR_MOTOR_LEVEL       0x09
 #define BXR_MOTOR_SWVERS      0x20
+#define BXR_PEDAL_TORQUE      0x21
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -85,6 +86,8 @@ static void MX_CAN_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
+
+void Send_CAN_Request(uint8_t command);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -157,17 +160,7 @@ int main(void)
   /*
   while(!CAN_RX_Flag){ //So lange Versionsanfrage senden, bis Antwort vom BionX-Controller kommt, dabei blinken.
   	  HAL_Delay(200);
-	  TxHeader.StdId=BXID_MOTOR;
-	    TxHeader.DLC=2;
-	    TxData[0] = 0;
-	    TxData[1] = BXR_MOTOR_SWVERS;
-
-	    HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
-	    if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-	    	{
-
-	    	  Error_Handler();
-	    	}
+		Send_CAN_Request(BXR_MOTOR_SWVERS);
 
   }*/
 
@@ -220,6 +213,8 @@ int main(void)
 		          // Transmission request Error
 		          Error_Handler();
 		        }
+
+		        Send_CAN_Request(BXR_PEDAL_TORQUE);
 
 		  if (ui16_slow_loop_counter>1000){
 			  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
@@ -617,6 +612,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	ADC_Flag=1;
+
+}
+
+void Send_CAN_Request(uint8_t command){
+
+	TxHeader.StdId=BXID_MOTOR;
+	TxHeader.DLC=2;
+	TxData[0] = 0;
+	TxData[1] = command;
+
+	HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+	   	{
+    	  Error_Handler();
+    	}
+
 
 }
 
