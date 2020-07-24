@@ -61,6 +61,7 @@ char UART_TX_Buffer[100];
 char UART_RX_Buffer[100];
 uint8_t i=0;
 uint8_t UART_RX_Flag=0;
+uint8_t UART_TX_Flag=0;
 uint8_t CAN_RX_Flag=0;
 uint8_t CAN_TX_Flag=0;
 uint8_t Timer3_Flag=0;
@@ -88,6 +89,7 @@ static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
 
 void Send_CAN_Request(uint8_t command);
+void Send_CAN_Command(uint8_t function, uint16_t value);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -157,13 +159,15 @@ int main(void)
     aMsg.data[0]=0;
     aMsg.data[1]=addr;
     aCan.Write(aMsg);*/
-  /*
+
   while(!CAN_RX_Flag){ //So lange Versionsanfrage senden, bis Antwort vom BionX-Controller kommt, dabei blinken.
   	  HAL_Delay(200);
+  	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		Send_CAN_Request(BXR_MOTOR_SWVERS);
-
-  }*/
-
+		  }
+  HAL_Delay(200);
+  Send_CAN_Command(0xA5, 0xAA); //Allow motor parameter setting
+  HAL_Delay(200);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -176,7 +180,7 @@ int main(void)
 
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
-		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+		  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 
 		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %lu, %d\r\n",UART_RX_Buffer[0],CAN1->TSR, HAL_CAN_GetState(&hcan));
 
@@ -186,6 +190,7 @@ int main(void)
 
 		  	  	HAL_UART_IRQHandler(&huart1);
 		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+		  	  	HAL_Delay(200);
 
 	  }
 
@@ -195,7 +200,7 @@ int main(void)
 		  Timer3_Flag=0;
 		  ui16_slow_loop_counter++;
 
-		  TxHeader.StdId=BXID_MOTOR;
+		  /*TxHeader.StdId=BXID_MOTOR;
 		  	  TxHeader.DLC=4;
 		  	  TxData[0] = 0;
 		  	  TxData[1] = BXR_MOTOR_LEVEL;
@@ -214,11 +219,12 @@ int main(void)
 		          Error_Handler();
 		        }
 
-		        Send_CAN_Request(BXR_PEDAL_TORQUE);
+		        Send_CAN_Request(BXR_PEDAL_TORQUE);*/
 
 		  if (ui16_slow_loop_counter>1000){
-			  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+			  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 			  ui16_slow_loop_counter=0;
+
 			  if (ADC_Flag){
 				  ADC_Flag=0;
 				  sprintf(UART_TX_Buffer, "ADC Values %d, %d, %d\r\n",adcData[0], adcData[1], adcData[2]);
@@ -229,6 +235,14 @@ int main(void)
 
 				  		  	  	HAL_UART_IRQHandler(&huart1);
 				  		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+				  		  	  	HAL_Delay(200);
+
+			  }
+			  Send_CAN_Command(UART_RX_Buffer[0],UART_RX_Buffer[1]); //send request with UART-Input
+			  if(CAN_TX_Flag){
+
+				  CAN_TX_Flag=0;
+				  Send_CAN_Request(UART_RX_Buffer[0]);
 
 			  }
 		  }
@@ -240,16 +254,20 @@ int main(void)
 	  if(CAN_RX_Flag){
 
 		  CAN_RX_Flag=0;
-
+		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		  //print out received CAN message
 		  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
 
 		  i=0;
 		  while (UART_TX_Buffer[i] != '\0')
 		  {i++;}
+
 		  HAL_UART_IRQHandler(&huart1);
 		  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+		  HAL_Delay(200);
 	  }
+
+
     /* USER CODE END WHILE */
 
 	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
@@ -454,7 +472,7 @@ static void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-  if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)UART_RX_Buffer, 1) != HAL_OK)
+  if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)UART_RX_Buffer, 2) != HAL_OK)
    {
 	   Error_Handler();
    }
@@ -566,7 +584,7 @@ static void MX_ADC1_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-
+	UART_TX_Flag=1;
 	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 
 }
@@ -622,12 +640,29 @@ void Send_CAN_Request(uint8_t command){
 	TxData[0] = 0;
 	TxData[1] = command;
 
-	HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
 	   	{
     	  Error_Handler();
     	}
 
+
+}
+
+void Send_CAN_Command(uint8_t function, uint16_t value){
+	TxHeader.StdId=BXID_MOTOR;
+	TxHeader.DLC=4;
+	TxData[0] = 0;
+	TxData[1] = function;
+	TxData[2] = (value>>8) & 0xff;
+	TxData[3] = value & 0xff;
+
+	// Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive
+	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+	  {
+	   // Transmission request Error
+	   Error_Handler();
+	  }
 
 }
 
