@@ -165,8 +165,7 @@ int main(void)
   	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		Send_CAN_Request(BXR_MOTOR_SWVERS);
 		  }
-  HAL_Delay(200);
-  Send_CAN_Command(0xA5, 0xAA); //Allow motor parameter setting
+
   HAL_Delay(200);
   /* USER CODE END 2 */
 
@@ -238,7 +237,7 @@ int main(void)
 				  		  	  	HAL_Delay(200);
 
 			  }
-			  Send_CAN_Command(UART_RX_Buffer[0],UART_RX_Buffer[1]); //send request with UART-Input
+			  Send_CAN_Command(UART_RX_Buffer[0],(UART_RX_Buffer[1]<<8)+UART_RX_Buffer[2]); //send request with UART-Input
 			  if(CAN_TX_Flag){
 
 				  CAN_TX_Flag=0;
@@ -472,7 +471,7 @@ static void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-  if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)UART_RX_Buffer, 2) != HAL_OK)
+  if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)UART_RX_Buffer, 3) != HAL_OK)
    {
 	   Error_Handler();
    }
