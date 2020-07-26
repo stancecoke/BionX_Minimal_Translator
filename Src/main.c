@@ -66,7 +66,10 @@ uint8_t CAN_RX_Flag=0;
 uint8_t CAN_TX_Flag=0;
 uint8_t Timer3_Flag=0;
 uint8_t ADC_Flag=0;
-
+uint8_t HI_LO_Byte_Flag=0; //0 = Lo-Byte, 1= Hi-Byte
+uint8_t ui8_i16_Gauge_Voltage_LO=0;
+uint8_t ui8_i16_Gauge_Voltage_HI=0;
+int16_t i16_Gauge_Voltage=0;
 uint16_t ui16_slow_loop_counter=0;
 volatile uint16_t adcData[3]; //Buffer for ADC1 Input
 
@@ -181,7 +184,7 @@ int main(void)
 		  UART_RX_Flag=0;
 		  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 
-		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %lu, %d\r\n",UART_RX_Buffer[0],CAN1->TSR, HAL_CAN_GetState(&hcan));
+		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %d, %d, %d\r\n",UART_RX_Buffer[0],UART_RX_Buffer[1], UART_RX_Buffer[2], UART_RX_Buffer[3]);
 
 		  	  	  i=0;
 		  	  	  while (UART_TX_Buffer[i] != '\0')
@@ -189,8 +192,11 @@ int main(void)
 
 		  	  	HAL_UART_IRQHandler(&huart1);
 		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
-		  	  	HAL_Delay(200);
 
+		  	  if(CAN_TX_Flag&&UART_RX_Buffer[0]){
+		  		CAN_TX_Flag=0;
+		  		Send_CAN_Command(UART_RX_Buffer[1],((uint16_t)UART_RX_Buffer[2]<<8)+UART_RX_Buffer[3]); //send command with UART-Input
+		  	  }
 	  }
 
 	  //Timer 3 running with 1kHz ISR frequency
@@ -220,11 +226,11 @@ int main(void)
 
 		        Send_CAN_Request(BXR_PEDAL_TORQUE);*/
 
-		  if (ui16_slow_loop_counter>1000){
+		  if (ui16_slow_loop_counter>20){
 			  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 			  ui16_slow_loop_counter=0;
 
-			  if (ADC_Flag){
+			 /* if (ADC_Flag){
 				  ADC_Flag=0;
 				  sprintf(UART_TX_Buffer, "ADC Values %d, %d, %d\r\n",adcData[0], adcData[1], adcData[2]);
 
@@ -236,12 +242,20 @@ int main(void)
 				  		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 				  		  	  	HAL_Delay(200);
 
-			  }
-			  Send_CAN_Command(UART_RX_Buffer[0],(UART_RX_Buffer[1]<<8)+UART_RX_Buffer[2]); //send request with UART-Input
+			  }*/
+
 			  if(CAN_TX_Flag){
 
 				  CAN_TX_Flag=0;
-				  Send_CAN_Request(UART_RX_Buffer[0]);
+				  if(HI_LO_Byte_Flag){
+				  Send_CAN_Request(0xC9);
+				  HI_LO_Byte_Flag=0;
+				  }
+				  else{
+					  Send_CAN_Request(0xCA);
+					  HI_LO_Byte_Flag=1;
+
+				  }
 
 			  }
 		  }
@@ -255,15 +269,22 @@ int main(void)
 		  CAN_RX_Flag=0;
 		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		  //print out received CAN message
-		  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
-
+		  //sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
+		  if(HI_LO_Byte_Flag){
+			 ui8_i16_Gauge_Voltage_LO=RxData[3];
+		  }
+		  else{
+			  ui8_i16_Gauge_Voltage_HI=RxData[3];
+		  }
+		  i16_Gauge_Voltage= ((int16_t)ui8_i16_Gauge_Voltage_HI<<8)+ui8_i16_Gauge_Voltage_LO;
+		  sprintf(UART_TX_Buffer, "%d\r\n", i16_Gauge_Voltage);
 		  i=0;
 		  while (UART_TX_Buffer[i] != '\0')
 		  {i++;}
 
 		  HAL_UART_IRQHandler(&huart1);
 		  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
-		  HAL_Delay(200);
+
 	  }
 
 
@@ -471,7 +492,7 @@ static void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-  if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)UART_RX_Buffer, 3) != HAL_OK)
+  if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)UART_RX_Buffer, 4) != HAL_OK)
    {
 	   Error_Handler();
    }
