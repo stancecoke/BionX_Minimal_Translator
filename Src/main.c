@@ -193,7 +193,7 @@ int main(void)
 		  	  	HAL_UART_IRQHandler(&huart1);
 		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 
-		  	  if(CAN_TX_Flag&&UART_RX_Buffer[0]){
+		  	  if(CAN_TX_Flag&&UART_RX_Buffer[0]==1){
 		  		CAN_TX_Flag=0;
 		  		Send_CAN_Command(UART_RX_Buffer[1],((uint16_t)UART_RX_Buffer[2]<<8)+UART_RX_Buffer[3]); //send command with UART-Input
 		  	  }
@@ -205,26 +205,7 @@ int main(void)
 		  Timer3_Flag=0;
 		  ui16_slow_loop_counter++;
 
-		  /*TxHeader.StdId=BXID_MOTOR;
-		  	  TxHeader.DLC=4;
-		  	  TxData[0] = 0;
-		  	  TxData[1] = BXR_MOTOR_LEVEL;
-		        TxData[2] = (UART_RX_Buffer[0]>>8) & 0xff;
-		        TxData[3] = UART_RX_Buffer[0] & 0xff;
 
-		        // Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive
-		        if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-		        {
-		          // Transmission request Error
-		          Error_Handler();
-		        }
-		        if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-		        {
-		          // Transmission request Error
-		          Error_Handler();
-		        }
-
-		        Send_CAN_Request(BXR_PEDAL_TORQUE);*/
 
 		  if (ui16_slow_loop_counter>20){
 			  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
@@ -245,16 +226,20 @@ int main(void)
 			  }*/
 
 			  if(CAN_TX_Flag){
-
 				  CAN_TX_Flag=0;
-				  if(HI_LO_Byte_Flag){
-				  Send_CAN_Request(0xC9);
-				  HI_LO_Byte_Flag=0;
+				  if(!UART_RX_Buffer[0]){
+
+					  if(HI_LO_Byte_Flag){
+						  Send_CAN_Request(0xC9);
+						  HI_LO_Byte_Flag=0;
+					  }
+					  else{
+						  Send_CAN_Request(0xCA);
+						  HI_LO_Byte_Flag=1;
+					  }
 				  }
 				  else{
-					  Send_CAN_Request(0xCA);
-					  HI_LO_Byte_Flag=1;
-
+					  Send_CAN_Request(UART_RX_Buffer[1]);
 				  }
 
 			  }
@@ -270,20 +255,33 @@ int main(void)
 		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		  //print out received CAN message
 		  //sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
-		  if(HI_LO_Byte_Flag){
-			 ui8_i16_Gauge_Voltage_LO=RxData[3];
-		  }
-		  else{
-			  ui8_i16_Gauge_Voltage_HI=RxData[3];
-		  }
-		  i16_Gauge_Voltage= ((int16_t)ui8_i16_Gauge_Voltage_HI<<8)+ui8_i16_Gauge_Voltage_LO;
-		  sprintf(UART_TX_Buffer, "%d\r\n", i16_Gauge_Voltage);
-		  i=0;
-		  while (UART_TX_Buffer[i] != '\0')
-		  {i++;}
+		  if(!UART_RX_Buffer[0]){
+			  if(HI_LO_Byte_Flag){
+				  ui8_i16_Gauge_Voltage_LO=RxData[3];
+			  }
+			  else{
+				  ui8_i16_Gauge_Voltage_HI=RxData[3];
+			  }
+			  i16_Gauge_Voltage= (ui8_i16_Gauge_Voltage_HI<<8)|ui8_i16_Gauge_Voltage_LO;
+			  sprintf(UART_TX_Buffer, "%d, %d, %d\r\n", i16_Gauge_Voltage, ui8_i16_Gauge_Voltage_LO, ui8_i16_Gauge_Voltage_HI);
+			  i=0;
+			  while (UART_TX_Buffer[i] != '\0')
+			  {i++;}
 
-		  HAL_UART_IRQHandler(&huart1);
-		  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+			  HAL_UART_IRQHandler(&huart1);
+			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+		  	  }
+		  else{
+			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
+
+			  i=0;
+			  while (UART_TX_Buffer[i] != '\0')
+			  {i++;}
+
+			  HAL_UART_IRQHandler(&huart1);
+			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+			  }
+
 
 	  }
 
