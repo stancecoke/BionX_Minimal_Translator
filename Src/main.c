@@ -36,7 +36,7 @@
 #define BXID_MOTOR            0x20
 #define BXR_MOTOR_LEVEL       0x09
 #define BXR_MOTOR_SWVERS      0x20
-#define BXR_PEDAL_TORQUE      0x21
+#define BXR_GAUGE_VOLTAGE     0xCA
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -60,16 +60,17 @@ DMA_HandleTypeDef hdma_usart1_tx;
 char UART_TX_Buffer[100];
 char UART_RX_Buffer[100];
 uint8_t i=0;
+uint8_t j=0;
 uint8_t UART_RX_Flag=0;
-uint8_t UART_TX_Flag=0;
+uint8_t UART_TX_Flag=1;
 uint8_t CAN_RX_Flag=0;
 uint8_t CAN_TX_Flag=0;
 uint8_t Timer3_Flag=0;
 uint8_t ADC_Flag=0;
-uint8_t HI_LO_Byte_Flag=0; //0 = Lo-Byte, 1= Hi-Byte
-uint8_t ui8_i16_Gauge_Voltage_LO=0;
-uint8_t ui8_i16_Gauge_Voltage_HI=0;
+uint8_t Gauge_Offset_Flag=0;
 int16_t i16_Gauge_Voltage=0;
+int16_t i16_Gauge_Voltage_Offset=0;
+int16_t i16_Pedal_Torque=0;
 uint16_t ui16_slow_loop_counter=0;
 volatile uint16_t adcData[3]; //Buffer for ADC1 Input
 
@@ -162,14 +163,17 @@ int main(void)
     aMsg.data[0]=0;
     aMsg.data[1]=addr;
     aCan.Write(aMsg);*/
-
+  UART_RX_Buffer[0]=2;
   while(!CAN_RX_Flag){ //So lange Versionsanfrage senden, bis Antwort vom BionX-Controller kommt, dabei blinken.
   	  HAL_Delay(200);
   	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		Send_CAN_Request(BXR_MOTOR_SWVERS);
 		  }
-
   HAL_Delay(200);
+
+
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -179,21 +183,22 @@ int main(void)
 
 
 
-
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
 		  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
-
+		  if(UART_TX_Flag){
+			 UART_TX_Flag=0;
 		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %d, %d, %d\r\n",UART_RX_Buffer[0],UART_RX_Buffer[1], UART_RX_Buffer[2], UART_RX_Buffer[3]);
 
 		  	  	  i=0;
 		  	  	  while (UART_TX_Buffer[i] != '\0')
 		  	  	  {i++;}
 
-		  	  	HAL_UART_IRQHandler(&huart1);
-		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 
-		  	  if(CAN_TX_Flag&&UART_RX_Buffer[0]==1){
+		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+		  }
+
+		  	  if(CAN_TX_Flag && UART_RX_Buffer[0]==1){
 		  		CAN_TX_Flag=0;
 		  		Send_CAN_Command(UART_RX_Buffer[1],((uint16_t)UART_RX_Buffer[2]<<8)+UART_RX_Buffer[3]); //send command with UART-Input
 		  	  }
@@ -225,18 +230,27 @@ int main(void)
 
 			  }*/
 
+				 if(!Gauge_Offset_Flag ){
+
+
+				  if (j < 8) //read in Gauge_Voltage Offset
+				  {
+
+					  Send_CAN_Request(BXR_GAUGE_VOLTAGE);
+
+				  }
+				  if(j==8){
+				  i16_Gauge_Voltage_Offset=i16_Gauge_Voltage_Offset>>3;
+				  Gauge_Offset_Flag=1;
+				  }
+				 }
+
 			  if(CAN_TX_Flag){
 				  CAN_TX_Flag=0;
 				  if(!UART_RX_Buffer[0]){
 
-					  if(HI_LO_Byte_Flag){
-						  Send_CAN_Request(0xC9);
-						  HI_LO_Byte_Flag=0;
-					  }
-					  else{
-						  Send_CAN_Request(0xCA);
-						  HI_LO_Byte_Flag=1;
-					  }
+					  Send_CAN_Request(BXR_GAUGE_VOLTAGE);
+
 				  }
 				  else{
 					  Send_CAN_Request(UART_RX_Buffer[1]);
@@ -252,35 +266,48 @@ int main(void)
 	  if(CAN_RX_Flag){
 
 		  CAN_RX_Flag=0;
-		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+
 		  //print out received CAN message
-		  //sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
+
+		  switch (RxData[1]) {
+
+		  case BXR_GAUGE_VOLTAGE:
+			  i16_Gauge_Voltage=RxData[3];
+			  if(!Gauge_Offset_Flag){
+				  j++;
+				  i16_Gauge_Voltage_Offset +=i16_Gauge_Voltage; //Sum up Gauge_Volatage 8 times at startup for Offset setting
+			  }
+			  i16_Pedal_Torque=i16_Gauge_Voltage-i16_Gauge_Voltage_Offset;
+			  break;
+		  }
+		  if(UART_TX_Flag){
+			 UART_TX_Flag=0;
 		  if(!UART_RX_Buffer[0]){
-			  if(HI_LO_Byte_Flag){
-				  ui8_i16_Gauge_Voltage_LO=RxData[3];
-			  }
-			  else{
-				  ui8_i16_Gauge_Voltage_HI=RxData[3];
-			  }
-			  i16_Gauge_Voltage= (ui8_i16_Gauge_Voltage_HI<<8)|ui8_i16_Gauge_Voltage_LO;
-			  sprintf(UART_TX_Buffer, "%d, %d, %d\r\n", i16_Gauge_Voltage, ui8_i16_Gauge_Voltage_LO, ui8_i16_Gauge_Voltage_HI);
+
+
+			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d \r\n", i16_Gauge_Voltage, i16_Gauge_Voltage_Offset, i16_Pedal_Torque, j);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
 
-			  HAL_UART_IRQHandler(&huart1);
+
 			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 		  	  }
 		  else{
+
 			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
 
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
 
-			  HAL_UART_IRQHandler(&huart1);
+
 			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+
+			  if(!Gauge_Offset_Flag){UART_RX_Buffer[0]=0;}
+
 			  }
+		  }
 
 
 	  }
@@ -517,6 +544,9 @@ static void MX_DMA_Init(void)
 	  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
 	  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
+	  HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
+	  HAL_NVIC_EnableIRQ(USART1_IRQn);
+
 }
 
 /**
@@ -602,8 +632,9 @@ static void MX_ADC1_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
+	HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 	UART_TX_Flag=1;
-	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	HAL_UART_IRQHandler(&huart1);// reset huart1
 
 }
 

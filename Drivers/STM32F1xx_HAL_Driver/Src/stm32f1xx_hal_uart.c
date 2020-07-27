@@ -943,6 +943,8 @@ HAL_StatusTypeDef HAL_UART_Transmit_DMA(UART_HandleTypeDef *huart, uint8_t *pDat
     /* Process Unlocked */
     __HAL_UNLOCK(huart);
 
+
+
     /* Enable the DMA transfer for transmit request by setting the DMAT bit
        in the UART CR3 register */
     SET_BIT(huart->Instance->CR3, USART_CR3_DMAT);
@@ -2037,6 +2039,7 @@ static void UART_DMATransmitCplt(DMA_HandleTypeDef *hdma)
 
     /* Enable the UART Transmit Complete Interrupt */
     SET_BIT(huart->Instance->CR1, USART_CR1_TCIE);
+
 
   }
   /* DMA Circular mode */
