@@ -60,8 +60,10 @@ DMA_HandleTypeDef hdma_usart1_tx;
 /* USER CODE BEGIN PV */
 char UART_TX_Buffer[100];
 char UART_RX_Buffer[100];
-uint8_t i=0;
-uint8_t j=0;
+uint8_t i=0; //counter for loops
+uint8_t j=0; //counter for autozero at startup
+uint8_t k=0; //counter for CAN_TX
+uint8_t l=0; //delay-counter
 uint8_t UART_RX_Flag=0;
 uint8_t UART_TX_Flag=1;
 uint8_t CAN_RX_Flag=0;
@@ -172,7 +174,7 @@ int main(void)
   	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		Send_CAN_Request(BXR_MOTOR_SWVERS);
 		  }
-  HAL_Delay(200);
+  HAL_Delay(2000);
 
 
 
@@ -215,7 +217,7 @@ int main(void)
 
 
 
-		  if (ui16_slow_loop_counter>20){
+		  if (ui16_slow_loop_counter>10){
 			  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 			  ui16_slow_loop_counter=0;
 			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER);
@@ -233,7 +235,7 @@ int main(void)
 				  		  	  	HAL_Delay(200);
 
 			  }*/
-
+			  // get gauge offest at startup
 				 if(!Gauge_Offset_Flag ){
 
 
@@ -248,23 +250,37 @@ int main(void)
 				  Gauge_Offset_Flag=1;
 				  }
 				 }
-
+				 // Send next CAN_TX if last CAN transmit is finished
 			  if(CAN_TX_Flag){
 				  CAN_TX_Flag=0;
-				  if(!UART_RX_Buffer[0]){
 
-					  Send_CAN_Request(BXR_GAUGE_VOLTAGE);
+				  switch (k) {
 
-				  }
-				  else{
-					  Send_CAN_Request(UART_RX_Buffer[1]);
-				  }
-				  Send_CAN_Command(BXR_MOTOR_LEVEL,i16_Current_Target);
+				  case 0:
+					  if(!UART_RX_Buffer[0]){
 
-			  }
-		  }
+						  Send_CAN_Request(BXR_GAUGE_VOLTAGE);
 
-		  }
+					  }
+					  else{
+
+						  Send_CAN_Request(UART_RX_Buffer[1]);
+					  }
+					  k=1;
+				  break;
+
+				  case 1:
+				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
+					  Send_CAN_Command(BXR_MOTOR_LEVEL,i16_Current_Target);
+
+					  k=0;
+				  break;
+
+				  }//end switch
+			  }//end TX_Flag
+
+		  }//end slow loop
+	  }// end timer 1 kHz loop
 
 
 
@@ -277,14 +293,21 @@ int main(void)
 		  switch (RxData[1]) {
 
 		  case BXR_GAUGE_VOLTAGE:
+			  if(l<250)l++;  //workaround to avoid wrong readings after Gauge Voltage reset to 1 when no torque is applied
 			  i16_Gauge_Voltage=RxData[3];
 			  if(!Gauge_Offset_Flag){
 				  j++;
 				  i16_Gauge_Voltage_Offset +=i16_Gauge_Voltage; //Sum up Gauge_Volatage 8 times at startup for Offset setting
 			  }
+			  if(i16_Gauge_Voltage==1){ //Gauge voltage get's 1 in scheduled time quantas if no torque is applied
+				  i32_Pedal_Torque_cumulated=0;
+				  l=0;
+			  }
+			  else if(l>20){
 			  i16_Pedal_Torque=i16_Gauge_Voltage_Offset-i16_Gauge_Voltage;
-			  i32_Pedal_Torque_cumulated -= i32_Pedal_Torque_cumulated>>FILTER;
+			  i32_Pedal_Torque_cumulated -= (i32_Pedal_Torque_cumulated>>FILTER);
 			  i32_Pedal_Torque_cumulated += i16_Pedal_Torque;
+			  }
 			  break;
 		  }
 		  if(UART_TX_Flag){
@@ -292,7 +315,7 @@ int main(void)
 		  if(!UART_RX_Buffer[0]){
 
 
-			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d \r\n", i16_Gauge_Voltage, i16_Gauge_Voltage_Offset, i16_Pedal_Torque, j);
+			  sprintf(UART_TX_Buffer, "%ld, %d, %d, %d \r\n", i32_Pedal_Torque_cumulated, i16_Pedal_Torque, i16_Current_Target, i16_Gauge_Voltage);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
