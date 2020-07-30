@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include "config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -71,6 +72,8 @@ uint8_t Gauge_Offset_Flag=0;
 int16_t i16_Gauge_Voltage=0;
 int16_t i16_Gauge_Voltage_Offset=0;
 int16_t i16_Pedal_Torque=0;
+int32_t i32_Pedal_Torque_cumulated=0;
+int16_t i16_Current_Target=0;
 uint16_t ui16_slow_loop_counter=0;
 volatile uint16_t adcData[3]; //Buffer for ADC1 Input
 
@@ -215,6 +218,7 @@ int main(void)
 		  if (ui16_slow_loop_counter>20){
 			  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 			  ui16_slow_loop_counter=0;
+			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER);
 
 			 /* if (ADC_Flag){
 				  ADC_Flag=0;
@@ -255,6 +259,7 @@ int main(void)
 				  else{
 					  Send_CAN_Request(UART_RX_Buffer[1]);
 				  }
+				  Send_CAN_Command(BXR_MOTOR_LEVEL,i16_Current_Target);
 
 			  }
 		  }
@@ -277,7 +282,9 @@ int main(void)
 				  j++;
 				  i16_Gauge_Voltage_Offset +=i16_Gauge_Voltage; //Sum up Gauge_Volatage 8 times at startup for Offset setting
 			  }
-			  i16_Pedal_Torque=i16_Gauge_Voltage-i16_Gauge_Voltage_Offset;
+			  i16_Pedal_Torque=i16_Gauge_Voltage_Offset-i16_Gauge_Voltage;
+			  i32_Pedal_Torque_cumulated -= i32_Pedal_Torque_cumulated>>FILTER;
+			  i32_Pedal_Torque_cumulated += i16_Pedal_Torque;
 			  break;
 		  }
 		  if(UART_TX_Flag){
