@@ -169,8 +169,6 @@ Wire Wire Line
 	6900 950  7900 950 
 Wire Wire Line
 	7100 2950 7100 2700
-Wire Wire Line
-	3150 2950 4600 2950
 Connection ~ 4600 2950
 Wire Wire Line
 	4600 2950 7100 2950
@@ -506,7 +504,7 @@ F 3 "~" H 1950 5050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2900 3650 2900 5850
+	2900 3650 2900 4350
 Wire Wire Line
 	1250 3200 1250 2950
 Wire Wire Line
@@ -541,14 +539,6 @@ F 3 "https://www.infineon.com/dgdl/Infineon-BTS50010-1TAD-DS-v01_00-EN.pdf?fileI
 	1    3050 2050
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	1950 4350 2700 4350
-Wire Wire Line
-	2700 4350 2700 3550
-Wire Wire Line
-	2700 3550 3050 3550
-Wire Wire Line
-	3050 3550 3050 2350
 Connection ~ 1950 4350
 Wire Wire Line
 	7050 1050 7050 1500
@@ -560,4 +550,16 @@ Wire Wire Line
 Connection ~ 1850 6900
 Wire Wire Line
 	1850 6900 1850 7250
+Connection ~ 2900 4350
+Wire Wire Line
+	2900 4350 2900 5850
+Wire Wire Line
+	1950 4350 2900 4350
+Wire Wire Line
+	3050 2350 3050 2950
+Wire Wire Line
+	3050 2950 3150 2950
+Connection ~ 3150 2950
+Wire Wire Line
+	3150 2950 4600 2950
 $EndSCHEMATC

@@ -431,8 +431,6 @@ Wire Wire Line
 	1950 6450 2050 6450
 Wire Wire Line
 	2050 6850 1850 6850
-Wire Wire Line
-	1850 5750 2450 5750
 Connection ~ 1250 4100
 Wire Wire Line
 	1850 6850 1850 6900
