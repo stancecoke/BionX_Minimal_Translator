@@ -28,12 +28,12 @@ $EndComp
 $Comp
 L power:GND #PWR?
 U 1 1 5F23D9C6
-P 1100 4350
-F 0 "#PWR?" H 1100 4100 50  0001 C CNN
-F 1 "GND" H 1105 4177 50  0000 C CNN
-F 2 "" H 1100 4350 50  0001 C CNN
-F 3 "" H 1100 4350 50  0001 C CNN
-	1    1100 4350
+P 1050 6900
+F 0 "#PWR?" H 1050 6650 50  0001 C CNN
+F 1 "GND" H 1055 6727 50  0000 C CNN
+F 2 "" H 1050 6900 50  0001 C CNN
+F 3 "" H 1050 6900 50  0001 C CNN
+	1    1050 6900
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -431,18 +431,13 @@ Wire Wire Line
 	1950 6450 2050 6450
 Wire Wire Line
 	2050 6850 1850 6850
-Wire Wire Line
-	1850 6850 1850 5750
-Wire Wire Line
-	1850 5750 2450 5750
 Connection ~ 1250 4100
 Wire Wire Line
-	1850 6850 1850 7250
+	1850 6850 1850 6900
 Wire Wire Line
 	1850 7250 2450 7250
 Wire Wire Line
 	2450 7250 2450 7050
-Connection ~ 1850 6850
 Wire Wire Line
 	5700 4950 3300 4950
 Wire Wire Line
@@ -461,17 +456,6 @@ Wire Wire Line
 Wire Wire Line
 	1950 1600 3050 1600
 Connection ~ 1950 1600
-$Comp
-L power:GND #PWR?
-U 1 1 5F2667C6
-P 7050 1050
-F 0 "#PWR?" H 7050 800 50  0001 C CNN
-F 1 "GND" H 7055 877 50  0000 C CNN
-F 2 "" H 7050 1050 50  0001 C CNN
-F 3 "" H 7050 1050 50  0001 C CNN
-	1    7050 1050
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	7050 1050 7900 1050
 Wire Wire Line
@@ -483,8 +467,6 @@ Wire Wire Line
 	3650 2050 3650 2550
 Wire Wire Line
 	3050 1600 6900 1600
-Wire Wire Line
-	1100 4350 1250 4350
 Connection ~ 3150 5650
 Wire Wire Line
 	3150 5650 3150 7550
@@ -529,7 +511,6 @@ Wire Wire Line
 	1250 3200 1250 2950
 Wire Wire Line
 	1250 4100 1250 4350
-Connection ~ 1250 4350
 Wire Wire Line
 	1250 4350 1950 4350
 Wire Wire Line
@@ -569,4 +550,14 @@ Wire Wire Line
 Wire Wire Line
 	3050 3550 3050 2350
 Connection ~ 1950 4350
+Wire Wire Line
+	7050 1050 7050 1500
+Wire Wire Line
+	7050 1500 7100 1500
+Connection ~ 7100 1500
+Wire Wire Line
+	1050 6900 1850 6900
+Connection ~ 1850 6900
+Wire Wire Line
+	1850 6900 1850 7250
 $EndSCHEMATC
