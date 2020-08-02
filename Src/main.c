@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include "config.h"
+#include "display_kunteng.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -78,6 +79,7 @@ int32_t i32_Pedal_Torque_cumulated=0;
 int16_t i16_Current_Target=0;
 uint16_t ui16_slow_loop_counter=0;
 volatile uint16_t adcData[3]; //Buffer for ADC1 Input
+MotorState_t MS; //struct for motor state
 
 
 
@@ -140,6 +142,7 @@ int main(void)
   MX_CAN_Init();
   MX_USART1_UART_Init();
   MX_ADC1_Init();
+  kunteng_init();
   /* Run the ADC calibration */
   if (HAL_ADCEx_Calibration_Start(&hadc1) != HAL_OK)
   {
@@ -193,6 +196,8 @@ int main(void)
 		  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;
+
+#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %d, %d, %d\r\n",UART_RX_Buffer[0],UART_RX_Buffer[1], UART_RX_Buffer[2], UART_RX_Buffer[3]);
 
 		  	  	  i=0;
@@ -201,12 +206,17 @@ int main(void)
 
 
 		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+
 		  }
 
 		  	  if(CAN_TX_Flag && UART_RX_Buffer[0]==1){
 		  		CAN_TX_Flag=0;
 		  		Send_CAN_Command(UART_RX_Buffer[1],((uint16_t)UART_RX_Buffer[2]<<8)+UART_RX_Buffer[3]); //send command with UART-Input
 		  	  }
+#endif
+#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
+		  	check_message(&MS);
+#endif
 	  }
 
 	  //Timer 3 running with 1kHz ISR frequency
@@ -312,8 +322,9 @@ int main(void)
 		  }
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;
-		  if(!UART_RX_Buffer[0]){
 
+#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
+		  if(!UART_RX_Buffer[0]){
 
 			  sprintf(UART_TX_Buffer, "%ld, %d, %d, %d \r\n", i32_Pedal_Torque_cumulated, i16_Pedal_Torque, i16_Current_Target, i16_Gauge_Voltage);
 			  i=0;
@@ -333,6 +344,7 @@ int main(void)
 
 
 			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+#endif
 
 			  if(!Gauge_Offset_Flag){UART_RX_Buffer[0]=0;}
 
@@ -547,7 +559,12 @@ static void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
+#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
   if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)UART_RX_Buffer, 4) != HAL_OK)
+#endif
+#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
+  if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)UART_RX_Buffer, 13) != HAL_OK)
+#endif
    {
 	   Error_Handler();
    }
