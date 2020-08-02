@@ -142,7 +142,9 @@ int main(void)
   MX_CAN_Init();
   MX_USART1_UART_Init();
   MX_ADC1_Init();
+#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
   kunteng_init();
+#endif
   /* Run the ADC calibration */
   if (HAL_ADCEx_Calibration_Start(&hadc1) != HAL_OK)
   {
@@ -193,7 +195,7 @@ int main(void)
 
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
-		  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;
 
@@ -230,8 +232,9 @@ int main(void)
 		  if (ui16_slow_loop_counter>10){
 			  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 			  ui16_slow_loop_counter=0;
-			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER);
+			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.assist_level/5;
 
+			  MS.Speed=15000/(MS.assist_level+1);
 			 /* if (ADC_Flag){
 				  ADC_Flag=0;
 				  sprintf(UART_TX_Buffer, "ADC Values %d, %d, %d\r\n",adcData[0], adcData[1], adcData[2]);
@@ -282,6 +285,7 @@ int main(void)
 				  case 1:
 				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
 					  Send_CAN_Command(BXR_MOTOR_LEVEL,i16_Current_Target);
+
 
 					  k=0;
 				  break;
@@ -357,7 +361,7 @@ int main(void)
 
     /* USER CODE END WHILE */
 
-	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+
 
     /* USER CODE BEGIN 3 */
   }
@@ -561,13 +565,11 @@ static void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
   if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)UART_RX_Buffer, 4) != HAL_OK)
-#endif
-#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
-  if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)UART_RX_Buffer, 13) != HAL_OK)
-#endif
    {
 	   Error_Handler();
    }
+
+#endif
   /* USER CODE END USART1_Init 2 */
 
 }
@@ -679,7 +681,7 @@ static void MX_ADC1_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 	UART_TX_Flag=1;
 	HAL_UART_IRQHandler(&huart1);// reset huart1
 
