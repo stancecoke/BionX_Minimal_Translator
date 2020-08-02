@@ -510,7 +510,7 @@ Wire Wire Line
 Wire Wire Line
 	1250 4100 1250 4350
 Wire Wire Line
-	1250 4350 1950 4350
+	1250 4350 1500 4350
 Wire Wire Line
 	2200 2200 2200 1950
 Wire Wire Line
@@ -562,4 +562,25 @@ Wire Wire Line
 Connection ~ 3150 2950
 Wire Wire Line
 	3150 2950 4600 2950
+$Comp
+L Device:D_Zener D?
+U 1 1 5F25BD75
+P 1500 3900
+F 0 "D?" V 1454 3979 50  0000 L CNN
+F 1 "D_Zener 4.7V" V 1545 3979 50  0000 L CNN
+F 2 "" H 1500 3900 50  0001 C CNN
+F 3 "~" H 1500 3900 50  0001 C CNN
+	1    1500 3900
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1400 3550 1500 3550
+Wire Wire Line
+	1500 3550 1500 3750
+Connection ~ 1400 3550
+Wire Wire Line
+	1500 4050 1500 4350
+Connection ~ 1500 4350
+Wire Wire Line
+	1500 4350 1950 4350
 $EndSCHEMATC

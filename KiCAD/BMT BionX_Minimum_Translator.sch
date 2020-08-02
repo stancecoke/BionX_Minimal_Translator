@@ -528,17 +528,6 @@ Wire Wire Line
 Wire Wire Line
 	1600 2950 1600 3450
 Connection ~ 1600 3450
-$Comp
-L Power_Management:BTS50010-1TAD U?
-U 1 1 5F329D26
-P 3050 2050
-F 0 "U?" H 3394 2096 50  0000 L CNN
-F 1 "BTS432" H 3394 2005 50  0000 L CNN
-F 2 "Package_TO_SOT_SMD:TO-263-7_TabPin4" H 3900 1750 50  0001 C CNN
-F 3 "https://www.infineon.com/dgdl/Infineon-BTS50010-1TAD-DS-v01_00-EN.pdf?fileId=5546d462576f34750157c38810ca55cd" H 3050 1650 50  0001 C CNN
-	1    3050 2050
-	1    0    0    -1  
-$EndComp
 Connection ~ 1950 4350
 Wire Wire Line
 	7050 1050 7050 1500
@@ -583,4 +572,15 @@ Wire Wire Line
 Connection ~ 1500 4350
 Wire Wire Line
 	1500 4350 1950 4350
+$Comp
+L Power_Management:BTS432 U?
+U 1 1 5F27B110
+P 3050 2050
+F 0 "U?" H 3394 2096 50  0000 L CNN
+F 1 "BTS432" H 3394 2005 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:TO-263-7_TabPin4" H 3900 1750 50  0001 C CNN
+F 3 "https://www.infineon.com/dgdl/Infineon-BTS50010-1TAD-DS-v01_00-EN.pdf?fileId=5546d462576f34750157c38810ca55cd" H 3050 1650 50  0001 C CNN
+	1    3050 2050
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
