@@ -34,7 +34,7 @@ uint8_t GetRXBuffer(){
 
 void kunteng_init()
 {
-//Start UART with DMA (bufferlenght = 1 for debugging)
+//Start UART with DMA
 
   if (HAL_UART_Receive_DMA(&huart1, (uint8_t *)ui8_rx_buffer, 13) != HAL_OK)
   {
@@ -120,21 +120,6 @@ ui8_tx_buffer [0] = 65;
     ui8_crc ^= ui8_tx_buffer[ui8_j];
   }
   ui8_tx_buffer [6] = ui8_crc;
-/*
-  ui8_tx_buffer[0] = ui8_rx_buffer[0];
-  ui8_tx_buffer[1] = ui8_rx_buffer[1];
-  ui8_tx_buffer[2] = ui8_rx_buffer[2];
-  ui8_tx_buffer[3] = ui8_rx_buffer[3];
-  ui8_tx_buffer[4] = ui8_rx_buffer[4];
-  ui8_tx_buffer[5] = ui8_rx_buffer[5];
-  ui8_tx_buffer[6] = ui8_rx_buffer[6];
-  ui8_tx_buffer[7] = ui8_rx_buffer[7];
-  ui8_tx_buffer[8] = ui8_rx_buffer[8];
-  ui8_tx_buffer[9] = ui8_rx_buffer[9];
-  ui8_tx_buffer[10] = ui8_rx_buffer[10];
-  ui8_tx_buffer[11] = ui8_rx_buffer[11];
-  */
-
 
   // send the package over UART
   HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&ui8_tx_buffer, 12);

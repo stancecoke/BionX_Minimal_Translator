@@ -195,7 +195,7 @@ int main(void)
 
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
-		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+		  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;
 
@@ -230,10 +230,15 @@ int main(void)
 
 
 		  if (ui16_slow_loop_counter>10){
-			  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+			  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 			  ui16_slow_loop_counter=0;
-			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.assist_level/5;
+#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
+			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER);
+#endif
 
+#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
+			  i16_Current_Target= MS.assist_level*3;
+#endif
 			  MS.Speed=15000/(MS.assist_level+1);
 			 /* if (ADC_Flag){
 				  ADC_Flag=0;
@@ -270,6 +275,7 @@ int main(void)
 				  switch (k) {
 
 				  case 0:
+#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 					  if(!UART_RX_Buffer[0]){
 
 						  Send_CAN_Request(BXR_GAUGE_VOLTAGE);
@@ -279,6 +285,12 @@ int main(void)
 
 						  Send_CAN_Request(UART_RX_Buffer[1]);
 					  }
+#endif
+#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
+
+						  Send_CAN_Request(BXR_GAUGE_VOLTAGE);
+
+#endif
 					  k=1;
 				  break;
 
@@ -584,16 +596,16 @@ static void MX_DMA_Init(void)
 
 	  /* DMA interrupt init */
 	  /* DMA1_Channel1_IRQn interrupt configuration */
-	  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+	  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 1, 0);
 	  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 	  /* DMA1_Channel4_IRQn interrupt configuration */
-	  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
+	  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 1, 0);
 	  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 	  /* DMA1_Channel5_IRQn interrupt configuration */
-	  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
+	  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 1, 0);
 	  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
-	  HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
+	  HAL_NVIC_SetPriority(USART1_IRQn, 1, 0);
 	  HAL_NVIC_EnableIRQ(USART1_IRQn);
 
 }
@@ -711,8 +723,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
 void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *CanHandle)
 {
 
-
-  CAN_TX_Flag=1;
+	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	CAN_TX_Flag=1;
 
 }
 
