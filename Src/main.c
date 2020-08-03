@@ -217,7 +217,7 @@ int main(void)
 		  	  }
 #endif
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
-		  	check_message(&MS);
+		  	//check_message(&MS);
 #endif
 	  }
 

@@ -583,4 +583,27 @@ F 3 "https://www.infineon.com/dgdl/Infineon-BTS50010-1TAD-DS-v01_00-EN.pdf?fileI
 	1    3050 2050
 	1    0    0    -1  
 $EndComp
+$Comp
+L Device:R R?
+U 1 1 5F28C11A
+P 7950 5650
+F 0 "R?" H 8020 5696 50  0000 L CNN
+F 1 "120" H 8020 5605 50  0000 L CNN
+F 2 "" V 7880 5650 50  0001 C CNN
+F 3 "~" H 7950 5650 50  0001 C CNN
+	1    7950 5650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7400 5550 7800 5550
+Wire Wire Line
+	7800 5550 7800 5500
+Wire Wire Line
+	7800 5500 7950 5500
+Connection ~ 7400 5550
+Wire Wire Line
+	7950 5800 7450 5800
+Wire Wire Line
+	7450 5800 7450 5750
+Connection ~ 7450 5750
 $EndSCHEMATC
