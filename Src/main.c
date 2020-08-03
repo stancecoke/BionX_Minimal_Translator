@@ -243,7 +243,7 @@ int main(void)
 #endif
 
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
-			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.assist_level/5;
+			  i16_Current_Target= (CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7;
 #endif
 
 			 /* if (ADC_Flag){

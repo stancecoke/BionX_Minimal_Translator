@@ -70,14 +70,14 @@ typedef struct
 	uint32_t       	Voltage;
 	uint16_t       	Speed;
 	uint16_t        Power;
-	uint32_t          	i_q;
+	uint32_t        Gauge_Factor;
 	uint32_t          	u_d;
 	uint32_t          	u_q;
 	uint32_t          	u_abs;
 	uint32_t          	Battery_Current;
 	uint8_t 		hall_angle_detect_flag;
 	uint8_t 		char_dyn_adc_state;
-	uint8_t 		assist_level;
+	uint8_t 		Assist_Level;
 
 }MotorState_t;
 

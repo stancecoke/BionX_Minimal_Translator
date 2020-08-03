@@ -157,7 +157,8 @@ void check_message(MotorState_t* MS_D)
      lcd_configuration_variables.ui8_max_speed = (10 + ((ui8_rx_buffer [2] & 248) >> 3)) | (ui8_rx_buffer [4] & 32);
      lcd_configuration_variables.ui8_power_assist_control_mode = ui8_rx_buffer [4] & 8;
      lcd_configuration_variables.ui8_controller_max_current = (ui8_rx_buffer [7] & 15);
-     MS_D->assist_level=lcd_configuration_variables.ui8_assist_level;
+     MS_D->Assist_Level=lcd_configuration_variables.ui8_assist_level;
+     MS_D->Gauge_Factor=lcd_configuration_variables.ui8_motor_characteristic;
      if(lcd_configuration_variables.ui8_light){
     	// HAL_GPIO_WritePin(LIGHT_GPIO_Port, LIGHT_Pin, GPIO_PIN_SET);
     	// HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
