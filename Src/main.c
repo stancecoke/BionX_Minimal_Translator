@@ -38,6 +38,8 @@
 #define BXID_MOTOR            0x20
 #define BXR_MOTOR_LEVEL       0x09
 #define BXR_MOTOR_SWVERS      0x20
+#define BXR_MOTOR_SPEED       0x11
+#define BXR_MOTOR_POWER       0x14
 #define BXR_GAUGE_VOLTAGE     0xCA
 /* USER CODE END PD */
 
@@ -243,7 +245,7 @@ int main(void)
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
 			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.assist_level/5;
 #endif
-			  MS.Speed=15000/(MS.assist_level+1);
+
 			 /* if (ADC_Flag){
 				  ADC_Flag=0;
 				  sprintf(UART_TX_Buffer, "ADC Values %d, %d, %d\r\n",adcData[0], adcData[1], adcData[2]);
@@ -302,6 +304,19 @@ int main(void)
 				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
 					  Send_CAN_Command(BXR_MOTOR_LEVEL,i16_Current_Target);
 
+					  k=2;
+				  break;
+
+				  case 2:
+				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
+					  Send_CAN_Request(BXR_MOTOR_SPEED);
+
+					  k=3;
+				  break;
+
+				  case 3:
+				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
+					  Send_CAN_Request(BXR_MOTOR_POWER);
 
 					  k=0;
 				  break;
@@ -339,6 +354,21 @@ int main(void)
 			  i32_Pedal_Torque_cumulated += i16_Pedal_Torque;
 			  }
 			  break;
+
+		  case BXR_MOTOR_SPEED:
+
+			  MS.Speed=15000/RxData[3];
+
+
+			  break;
+
+		  case BXR_MOTOR_POWER:
+
+			  MS.Power=RxData[3];
+
+
+			  break;
+
 		  }
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;

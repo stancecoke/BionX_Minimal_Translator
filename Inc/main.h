@@ -68,8 +68,8 @@ typedef struct
 {
 
 	uint32_t       	Voltage;
-	uint32_t       	Speed;
-	uint32_t          	i_d;
+	uint16_t       	Speed;
+	uint16_t        Power;
 	uint32_t          	i_q;
 	uint32_t          	u_d;
 	uint32_t          	u_q;
