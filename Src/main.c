@@ -195,11 +195,12 @@ int main(void)
 
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
-		  //HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+
+#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;
 
-#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
+
 		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %d, %d, %d\r\n",UART_RX_Buffer[0],UART_RX_Buffer[1], UART_RX_Buffer[2], UART_RX_Buffer[3]);
 
 		  	  	  i=0;
@@ -215,11 +216,14 @@ int main(void)
 		  		CAN_TX_Flag=0;
 		  		Send_CAN_Command(UART_RX_Buffer[1],((uint16_t)UART_RX_Buffer[2]<<8)+UART_RX_Buffer[3]); //send command with UART-Input
 		  	  }
+
+
 #endif
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
-		  	//check_message(&MS);
+		  	check_message(&MS);
+
 #endif
-	  }
+	  } //end uart rx flag
 
 	  //Timer 3 running with 1kHz ISR frequency
 	  if(Timer3_Flag){
@@ -237,7 +241,7 @@ int main(void)
 #endif
 
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
-			  i16_Current_Target= MS.assist_level*3;
+			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.assist_level/5;
 #endif
 			  MS.Speed=15000/(MS.assist_level+1);
 			 /* if (ADC_Flag){
@@ -360,12 +364,13 @@ int main(void)
 
 
 			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+		  }
 #endif
 
 			  if(!Gauge_Offset_Flag){UART_RX_Buffer[0]=0;}
 
 			  }
-		  }
+		  }//End CAN Rx
 
 
 	  }
@@ -376,9 +381,9 @@ int main(void)
 
 
     /* USER CODE BEGIN 3 */
-  }
+  } //end while loop
   /* USER CODE END 3 */
-}
+
 
 /**
   * @brief System Clock Configuration
@@ -608,6 +613,7 @@ static void MX_DMA_Init(void)
 	  HAL_NVIC_SetPriority(USART1_IRQn, 1, 0);
 	  HAL_NVIC_EnableIRQ(USART1_IRQn);
 
+
 }
 
 /**
@@ -693,15 +699,16 @@ static void MX_ADC1_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+
 	UART_TX_Flag=1;
-	HAL_UART_IRQHandler(&huart1);// reset huart1
+	//HAL_UART_IRQHandler(&huart1);// reset huart1
 
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	UART_RX_Flag=1;
+
 
 }
 
@@ -723,7 +730,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
 void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *CanHandle)
 {
 
-	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+
 	CAN_TX_Flag=1;
 
 }
@@ -732,6 +739,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim == &htim3) {
 		Timer3_Flag=1;
+
 
 	}
 }
