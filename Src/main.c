@@ -70,7 +70,6 @@ uint8_t CAN_RX_Flag=0;
 uint8_t CAN_TX_Flag=0;
 uint8_t Timer3_Flag=0;
 uint8_t ADC_Flag=0;
-uint8_t Gauge_Offset_Flag=0;
 int16_t i16_Gauge_Voltage=0;
 int16_t i16_Gauge_Voltage_Offset=0;
 int16_t i16_Pedal_Torque=0;
@@ -164,22 +163,8 @@ int main(void)
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcData, 3);
 
   /* USER CODE BEGIN 2 */
-  /*bool ReadBionxReg(int canid, uint16_t addr, uint16_t &ret )
-  {
-    CanMsg aMsg;
-    aMsg.id=canid;
-    aMsg.dlc=2;
-    aMsg.data[0]=0;
-    aMsg.data[1]=addr;
-    aCan.Write(aMsg);*/
-  UART_RX_Buffer[0]=2;
-  while(!CAN_RX_Flag){ //So lange Versionsanfrage senden, bis Antwort vom BionX-Controller kommt, dabei blinken.
-  	  HAL_Delay(200);
-  	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
-		Send_CAN_Request(REG_MOTOR_REV_SW);
-		  }
-  HAL_Delay(2000);
 
+  UART_RX_Buffer[0]=2;
 
 
 
@@ -213,15 +198,13 @@ int main(void)
 
 		  	  if(CAN_TX_Flag && UART_RX_Buffer[0]==1){
 		  		CAN_TX_Flag=0;
+		  		Send_CAN_Command(REG_MOTOR_PROTECT_UNLOCK,MOTOR_PROTECT_UNLOCK_KEY); //Unlock Motor for writing register
 		  		Send_CAN_Command(UART_RX_Buffer[1],((uint16_t)UART_RX_Buffer[2]<<8)+UART_RX_Buffer[3]); //send command with UART-Input
 		  	  }
 
 
 #endif
-#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
-		  	check_message(&MS);
 
-#endif
 	  } //end uart rx flag
 
 	  //Timer 3 running with 1kHz ISR frequency
@@ -235,92 +218,9 @@ int main(void)
 		  if (ui16_slow_loop_counter>10){
 
 			  ui16_slow_loop_counter=0;
-#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
-			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER);
-#endif
-
-#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
-			  i16_Current_Target= (CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7;
-#endif
-
-			 /* if (ADC_Flag){
-				  ADC_Flag=0;
-				  sprintf(UART_TX_Buffer, "ADC Values %d, %d, %d\r\n",adcData[0], adcData[1], adcData[2]);
-
-				  		  	  	  i=0;
-				  		  	  	  while (UART_TX_Buffer[i] != '\0')
-				  		  	  	  {i++;}
-
-				  		  	  	HAL_UART_IRQHandler(&huart1);
-				  		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
-				  		  	  	HAL_Delay(200);
-
-			  }*/
-			  // get gauge offest at startup
-				 if(!Gauge_Offset_Flag ){
 
 
-				  if (j < 8) //read in Gauge_Voltage Offset
-				  {
 
-					  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO);
-
-				  }
-				  if(j==8){
-				  i16_Gauge_Voltage_Offset=i16_Gauge_Voltage_Offset>>3;
-				  Gauge_Offset_Flag=1;
-				  }
-				 }
-				 // Send next CAN_TX if last CAN transmit is finished
-			  if(CAN_TX_Flag){
-				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
-				  CAN_TX_Flag=0;
-
-				  switch (k) {
-
-				  case 0:
-#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
-					  if(!UART_RX_Buffer[0]){
-
-						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO);
-
-					  }
-					  else{
-
-						  Send_CAN_Request(UART_RX_Buffer[1]);
-					  }
-#endif
-#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
-
-						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO);
-
-#endif
-					  k=1;
-				  break;
-
-				  case 1:
-				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
-					  Send_CAN_Command(REG_MOTOR_ASSIST_LEVEL,i16_Current_Target);
-
-					  k=2;
-				  break;
-
-				  case 2:
-				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
-					  Send_CAN_Request(REG_MOTOR_STATUS_SPEED);
-
-					  k=3;
-				  break;
-
-				  case 3:
-				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
-					  Send_CAN_Request(REG_MOTOR_STATUS_POWER_METER);
-
-					  k=0;
-				  break;
-
-				  }//end switch
-			  }//end TX_Flag
 
 		  }//end slow loop
 	  }// end timer 1 kHz loop
@@ -332,30 +232,18 @@ int main(void)
 		  CAN_RX_Flag=0;
 
 		  //print out received CAN message
-
+		  if(RxHeader.DLC==4){
 		  switch (RxData[1]) {
 
 		  case REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO:
-			  if(l<250)l++;  //workaround to avoid wrong readings after Gauge Voltage reset to 1 when no torque is applied
+
 			  i16_Gauge_Voltage=RxData[3];
-			  if(!Gauge_Offset_Flag){
-				  j++;
-				  i16_Gauge_Voltage_Offset +=i16_Gauge_Voltage; //Sum up Gauge_Volatage 8 times at startup for Offset setting
-			  }
-			  if(i16_Gauge_Voltage==1){ //Gauge voltage get's 1 in scheduled time quantas if no torque is applied
-				  i32_Pedal_Torque_cumulated=0;
-				  l=0;
-			  }
-			  else if(l>20){
-			  i16_Pedal_Torque=i16_Gauge_Voltage_Offset-i16_Gauge_Voltage;
-			  i32_Pedal_Torque_cumulated -= (i32_Pedal_Torque_cumulated>>FILTER);
-			  i32_Pedal_Torque_cumulated += i16_Pedal_Torque;
-			  }
+
 			  break;
 
 		  case REG_MOTOR_STATUS_SPEED:
 
-			  MS.Speed=15000/RxData[3];
+			  MS.Speed=RxData[3];
 
 
 			  break;
@@ -367,14 +255,15 @@ int main(void)
 
 			  break;
 
-		  }
+		  }//end switch
+		  }//end if DLC=4
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;
 
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, "%ld, %d, %d, %d \r\n", i32_Pedal_Torque_cumulated, i16_Pedal_Torque, i16_Current_Target, i16_Gauge_Voltage);
+			  sprintf(UART_TX_Buffer, "%d, %d, %d, \r\n", i16_Gauge_Voltage, MS.Speed, MS.Power);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
@@ -395,7 +284,6 @@ int main(void)
 		  }
 #endif
 
-			  if(!Gauge_Offset_Flag){UART_RX_Buffer[0]=0;}
 
 			  }
 		  }//End CAN Rx
