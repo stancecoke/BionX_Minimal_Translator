@@ -202,6 +202,10 @@ int main(void)
 		  		Send_CAN_Command(UART_RX_Buffer[1],((uint16_t)UART_RX_Buffer[2]<<8)+UART_RX_Buffer[3]); //send command with UART-Input
 		  	  }
 
+		  	  else{
+		  		Send_CAN_Request(UART_RX_Buffer[1]);
+		  	  }
+
 
 #endif
 
