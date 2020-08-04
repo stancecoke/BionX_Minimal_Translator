@@ -382,7 +382,7 @@ int main(void)
 
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 		  if(UART_TX_Flag){
-			 UART_TX_Flag=0;
+
 
 
 		  if(!UART_RX_Buffer[0]){
@@ -392,10 +392,10 @@ int main(void)
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
 
-
+			  UART_TX_Flag=0;
 			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 		  	  }
-		  else{
+		  else if(RxData[1]==UART_RX_Buffer[1]){
 
 			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
 
@@ -403,7 +403,7 @@ int main(void)
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
 
-
+			  UART_TX_Flag=0;
 			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 		  }
 
