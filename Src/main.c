@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include "config.h"
 #include "display_kunteng.h"
+#include "CAN-Registers.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,12 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define BXID_MOTOR            0x20
-#define BXR_MOTOR_LEVEL       0x09
-#define BXR_MOTOR_SWVERS      0x20
-#define BXR_MOTOR_SPEED       0x11
-#define BXR_MOTOR_POWER       0x14
-#define BXR_GAUGE_VOLTAGE     0xCA
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -179,7 +175,7 @@ int main(void)
   while(!CAN_RX_Flag){ //So lange Versionsanfrage senden, bis Antwort vom BionX-Controller kommt, dabei blinken.
   	  HAL_Delay(200);
   	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
-		Send_CAN_Request(BXR_MOTOR_SWVERS);
+		Send_CAN_Request(REG_MOTOR_REV_SW);
 		  }
   HAL_Delay(2000);
 
@@ -266,7 +262,7 @@ int main(void)
 				  if (j < 8) //read in Gauge_Voltage Offset
 				  {
 
-					  Send_CAN_Request(BXR_GAUGE_VOLTAGE);
+					  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO);
 
 				  }
 				  if(j==8){
@@ -285,7 +281,7 @@ int main(void)
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 					  if(!UART_RX_Buffer[0]){
 
-						  Send_CAN_Request(BXR_GAUGE_VOLTAGE);
+						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO);
 
 					  }
 					  else{
@@ -295,7 +291,7 @@ int main(void)
 #endif
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
 
-						  Send_CAN_Request(BXR_GAUGE_VOLTAGE);
+						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO);
 
 #endif
 					  k=1;
@@ -303,21 +299,33 @@ int main(void)
 
 				  case 1:
 				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
-					  Send_CAN_Command(BXR_MOTOR_LEVEL,i16_Current_Target);
+#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
+					  if(!UART_RX_Buffer[0]){
+						  Send_CAN_Command(REG_MOTOR_ASSIST_LEVEL,i16_Current_Target);
+					  }
+					  else{
+						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_MAX_VOLTAGE);
+					  }
+#endif
+#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
+
+					  Send_CAN_Command(REG_MOTOR_ASSIST_LEVEL,i16_Current_Target);
+
+#endif
 
 					  k=2;
 				  break;
 
 				  case 2:
 				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
-					  Send_CAN_Request(BXR_MOTOR_SPEED);
+					  Send_CAN_Request(REG_MOTOR_STATUS_SPEED);
 
 					  k=3;
 				  break;
 
 				  case 3:
 				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
-					  Send_CAN_Request(BXR_MOTOR_POWER);
+					  Send_CAN_Request(REG_MOTOR_STATUS_POWER_METER);
 
 					  k=0;
 				  break;
@@ -338,7 +346,7 @@ int main(void)
 
 		  switch (RxData[1]) {
 
-		  case BXR_GAUGE_VOLTAGE:
+		  case REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO:
 			  if(l<250)l++;  //workaround to avoid wrong readings after Gauge Voltage reset to 1 when no torque is applied
 			  i16_Gauge_Voltage=RxData[3];
 			  if(!Gauge_Offset_Flag){
@@ -356,14 +364,14 @@ int main(void)
 			  }
 			  break;
 
-		  case BXR_MOTOR_SPEED:
+		  case REG_MOTOR_STATUS_SPEED:
 
 			  MS.Speed=15000/RxData[3];
 
 
 			  break;
 
-		  case BXR_MOTOR_POWER:
+		  case REG_MOTOR_STATUS_POWER_METER:
 
 			  MS.Power=RxData[3];
 
@@ -371,10 +379,12 @@ int main(void)
 			  break;
 
 		  }
+
+#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;
 
-#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
+
 		  if(!UART_RX_Buffer[0]){
 
 			  sprintf(UART_TX_Buffer, "%ld, %d, %d, %d \r\n", i32_Pedal_Torque_cumulated, i16_Pedal_Torque, i16_Current_Target, i16_Gauge_Voltage);
@@ -396,11 +406,12 @@ int main(void)
 
 			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 		  }
-#endif
+
 
 			  if(!Gauge_Offset_Flag){UART_RX_Buffer[0]=0;}
 
 			  }
+#endif
 		  }//End CAN Rx
 
 
@@ -528,7 +539,7 @@ static void MX_CAN_Init(void)
     }
 
     /*##-5- Configure Transmission process #####################################*/
-    TxHeader.StdId = BXID_MOTOR;
+    TxHeader.StdId = ID_MOTOR;
     TxHeader.ExtId = 0x01;
     TxHeader.RTR = CAN_RTR_DATA;
     TxHeader.IDE = CAN_ID_STD;
@@ -599,7 +610,12 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
+#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
+  huart1.Init.BaudRate = 115200;
+#endif
+#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
   huart1.Init.BaudRate = 9600;
+#endif
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -784,7 +800,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 
 void Send_CAN_Request(uint8_t command){
 
-	TxHeader.StdId=BXID_MOTOR;
+	TxHeader.StdId=ID_MOTOR;
 	TxHeader.DLC=2;
 	TxData[0] = 0;
 	TxData[1] = command;
@@ -799,7 +815,7 @@ void Send_CAN_Request(uint8_t command){
 }
 
 void Send_CAN_Command(uint8_t function, uint16_t value){
-	TxHeader.StdId=BXID_MOTOR;
+	TxHeader.StdId=ID_MOTOR;
 	TxHeader.DLC=4;
 	TxData[0] = 0;
 	TxData[1] = function;
