@@ -256,6 +256,11 @@ int main(void)
 
 			  MS.Power=RxData[3];
 
+			  break;
+
+		  case REG_MOTOR_ASSIST_LEVEL:
+
+			  i16_Current_Target=RxData[3];
 
 			  break;
 
@@ -267,7 +272,7 @@ int main(void)
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, "%d, %d, %d, \r\n", i16_Gauge_Voltage, MS.Speed, MS.Power);
+			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, \r\n", i16_Gauge_Voltage, MS.Speed, MS.Power, i16_Current_Target);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
