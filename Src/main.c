@@ -236,7 +236,7 @@ int main(void)
 
 
 		  if (ui16_slow_loop_counter>10){
-			  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+
 			  ui16_slow_loop_counter=0;
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER);
@@ -276,6 +276,7 @@ int main(void)
 				 }
 				 // Send next CAN_TX if last CAN transmit is finished
 			  if(CAN_TX_Flag){
+				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 				  CAN_TX_Flag=0;
 
 				  switch (k) {
