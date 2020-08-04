@@ -235,7 +235,7 @@ int main(void)
 
 
 
-		  if (ui16_slow_loop_counter>10){
+		  if (ui16_slow_loop_counter>5){
 
 			  ui16_slow_loop_counter=0;
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
