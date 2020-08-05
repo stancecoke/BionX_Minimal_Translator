@@ -255,21 +255,7 @@ int main(void)
 				  		  	  	HAL_Delay(200);
 
 			  }*/
-			  // get gauge offest at startup
-				 if(!Gauge_Offset_Flag ){
 
-
-				  if (j < 8) //read in Gauge_Voltage Offset
-				  {
-
-					  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO);
-
-				  }
-				  if(j==8){
-				  i16_Gauge_Voltage_Offset=i16_Gauge_Voltage_Offset>>3;
-				  Gauge_Offset_Flag=1;
-				  }
-				 }
 				 // Send next CAN_TX if last CAN transmit is finished
 			  if(CAN_TX_Flag){
 				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
@@ -291,7 +277,7 @@ int main(void)
 #endif
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
 
-						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO);
+						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VALUE);
 
 #endif
 					  k=1;
@@ -342,26 +328,15 @@ int main(void)
 
 		  CAN_RX_Flag=0;
 
-		  //print out received CAN message
+
 
 		  switch (RxData[1]) {
 
-		  case REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO:
-			  if(l<250)l++;  //workaround to avoid wrong readings after Gauge Voltage reset to 1 when no torque is applied
-			  i16_Gauge_Voltage=RxData[3];
-			  if(!Gauge_Offset_Flag){
-				  j++;
-				  i16_Gauge_Voltage_Offset +=i16_Gauge_Voltage; //Sum up Gauge_Volatage 8 times at startup for Offset setting
-			  }
-			  if(i16_Gauge_Voltage==1){ //Gauge voltage get's 1 in scheduled time quantas if no torque is applied
-				  i32_Pedal_Torque_cumulated=0;
-				  l=0;
-			  }
-			  else if(l>20){
-			  i16_Pedal_Torque=i16_Gauge_Voltage_Offset-i16_Gauge_Voltage;
+		  case REG_MOTOR_TORQUE_GAUGE_VALUE:
+			  i16_Pedal_Torque=RxData[3];
 			  i32_Pedal_Torque_cumulated -= (i32_Pedal_Torque_cumulated>>FILTER);
 			  i32_Pedal_Torque_cumulated += i16_Pedal_Torque;
-			  }
+
 			  break;
 
 		  case REG_MOTOR_STATUS_SPEED:
@@ -381,6 +356,7 @@ int main(void)
 		  }
 
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
+		  //print out received CAN message
 		  if(UART_TX_Flag){
 
 
