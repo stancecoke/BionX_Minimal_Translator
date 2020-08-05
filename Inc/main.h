@@ -61,8 +61,7 @@ void Error_Handler(void);
 #define Onboard_LED_Pin GPIO_PIN_13
 #define Onboard_LED_GPIO_Port GPIOC
 
-#define Brake_Pin GPIO_PIN_1
-#define Brake_GPIO_Port GPIOB
+
 
 #define Throttle_Pin GPIO_PIN_3
 #define Throttle_GPIO_Port GPIOA
@@ -78,6 +77,9 @@ void Error_Handler(void);
 
 #define Light_Pin GPIO_PIN_3
 #define Light_GPIO_Port GPIOB
+
+#define Brake_Pin GPIO_PIN_1
+#define Brake_GPIO_Port GPIOB
 
 #define PAS_Pin GPIO_PIN_0 //for Exti0 interrupt. Px0 lines have to be considered, https://stm32f4-discovery.net/2014/08/stm32f4-external-interrupts-tutorial/
 #define PAS_GPIO_Port GPIOB

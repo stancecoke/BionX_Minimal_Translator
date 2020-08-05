@@ -71,8 +71,7 @@ uint8_t CAN_TX_Flag=0;
 uint8_t Timer3_Flag=0;
 uint8_t ADC_Flag=0;
 uint8_t Gauge_Offset_Flag=0;
-int16_t i16_Gauge_Voltage=0;
-int16_t i16_Gauge_Voltage_Offset=0;
+int8_t i8_Throttle=0; //must be scaled to valid values from -64 ... +64
 int16_t i16_Pedal_Torque=0;
 int32_t i32_Pedal_Torque_cumulated=0;
 int16_t i16_Current_Target=0;
@@ -100,6 +99,7 @@ static void MX_TIM3_Init(void);
 
 void Send_CAN_Request(uint8_t command);
 void Send_CAN_Command(uint8_t function, uint16_t value);
+int32_t map (int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -223,7 +223,7 @@ int main(void)
 		  Timer3_Flag=0;
 		  ui16_slow_loop_counter++;
 		  //Bremseingang abfragen
-		  MS.Brake=HAL_GPIO_ReadPin(Brake_Pin, Brake_GPIO_Port);
+		  MS.Brake=HAL_GPIO_ReadPin(Brake_GPIO_Port, Brake_Pin);
 		  // hier ggf. noch entprellen?
 		  if(MS.Brake==0 && Brake_Flag_Old==1){
 
@@ -233,6 +233,8 @@ int main(void)
 			  }
 		  }
 		  Brake_Flag_Old=MS.Brake;
+
+		  i8_Throttle=map(adcData[3],THROTTLE_MIN,THROTTLE_MAX, 0, 63); //map throttle ADC-value to valid LEVEL range
 
 
 
@@ -244,9 +246,23 @@ int main(void)
 #endif
 
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
-			  if(!MS.Perma_Regen)i16_Current_Target= (CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
-			  else if(!MS.Brake)i16_Current_Target = -CALIB_REGEN*MS.Regen_Factor*3;		//regen via brake lever
-			  else i16_Current_Target = -CALIB_REGEN*MS.Regen_Factor*MS.Assist_Level/5;		//permanent regen switched by tip on brake lever in level 0
+			  if(!MS.Brake){
+				  i16_Current_Target = -CALIB_REGEN*MS.Regen_Factor*3;		//regen via brake lever
+				  i8_Throttle=-i8_Throttle;
+			  }
+			  else if(MS.Perma_Regen){
+				  i16_Current_Target = -CALIB_REGEN*MS.Regen_Factor*MS.Assist_Level/5;		//permanent regen switched by tip on brake lever in level 0
+				  i8_Throttle=-i8_Throttle;
+			  }
+			  else i16_Current_Target = (CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
+
+			  // limit Current_Target to valid range for LEVEL
+			  if(i16_Current_Target>63)i16_Current_Target=63;
+			  if(i16_Current_Target<-63)i16_Current_Target=-63;
+			  // Throttle override for regen and assist
+			  if(i16_Current_Target>0 && i8_Throttle>0 && i8_Throttle>i16_Current_Target)i16_Current_Target=i8_Throttle;
+			  if(i16_Current_Target<0 && i8_Throttle<0 && i8_Throttle<i16_Current_Target)i16_Current_Target=i8_Throttle;
+
 #endif
 
 			 /* if (ADC_Flag){
@@ -845,6 +861,23 @@ void Send_CAN_Command(uint8_t function, uint16_t value){
 	   Error_Handler();
 	  }
 
+}
+
+int32_t map (int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max)
+{
+  // if input is smaller/bigger than expected return the min/max out ranges value
+  if (x < in_min)
+    return out_min;
+  else if (x > in_max)
+    return out_max;
+
+  // map the input to the output range.
+  // round up if mapping bigger ranges to smaller ranges
+  else  if ((in_max - in_min) > (out_max - out_min))
+    return (x - in_min) * (out_max - out_min + 1) / (in_max - in_min + 1) + out_min;
+  // round down if mapping smaller ranges to bigger ranges
+  else
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 
