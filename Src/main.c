@@ -171,7 +171,7 @@ int main(void)
   	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		Send_CAN_Request(REG_MOTOR_REV_SW);
 		  }
-  HAL_Delay(2000);
+  HAL_Delay(200);
 
 
 

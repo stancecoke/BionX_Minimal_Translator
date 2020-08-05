@@ -61,8 +61,6 @@ void Error_Handler(void);
 #define Onboard_LED_Pin GPIO_PIN_13
 #define Onboard_LED_GPIO_Port GPIOC
 
-
-
 #define Throttle_Pin GPIO_PIN_3
 #define Throttle_GPIO_Port GPIOA
 
