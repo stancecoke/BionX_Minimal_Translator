@@ -244,7 +244,9 @@ int main(void)
 #endif
 
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
-			  i16_Current_Target= (CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7;
+			  if(!MS.Perma_Regen)i16_Current_Target= (CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
+			  else if(!MS.Brake)i16_Current_Target = -CALIB_REGEN*MS.Regen_Factor*3;		//regen via brake lever
+			  else i16_Current_Target = -CALIB_REGEN*MS.Regen_Factor*MS.Assist_Level/5;		//permanent regen switched by tip on brake lever in level 0
 #endif
 
 			 /* if (ADC_Flag){

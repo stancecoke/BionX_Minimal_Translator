@@ -169,7 +169,7 @@ void check_message(MotorState_t* MS_D)
      lcd_configuration_variables.ui8_C1 = ((ui8_rx_buffer [6]>>3) & 7); //Bit 3,4,5
      MS_D->Assist_Level=lcd_configuration_variables.ui8_assist_level;
      MS_D->Gauge_Factor=lcd_configuration_variables.ui8_motor_characteristic;
-     MS_D->C1=lcd_configuration_variables.ui8_C1;
+     MS_D->Regen_Factor=lcd_configuration_variables.ui8_C1;
      if(lcd_configuration_variables.ui8_light){
     	HAL_GPIO_WritePin(Light_GPIO_Port, Light_Pin, GPIO_PIN_SET);
      }

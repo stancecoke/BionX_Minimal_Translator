@@ -8,7 +8,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define CALIB 1	 //better value not known :-)
+#define CALIB 1	 // calibration factor for DMS-Torque, better value not known :-)
+#define CALIB_REGEN 1 //calibration factor for regen
 #define FILTER 4 //average from 2^6 samples, sample rate = 50Hz
 //predefine Display Types
 #define DISPLAY_TYPE_KUNTENG (1<<1)							// For use with Kunteng LCD Displays
