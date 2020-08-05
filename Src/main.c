@@ -64,6 +64,7 @@ uint8_t j=0; //counter for autozero at startup
 uint8_t k=0; //counter for CAN_TX
 uint8_t l=0; //delay-counter
 uint8_t UART_RX_Flag=0;
+uint8_t Brake_Flag_Old=0;
 uint8_t UART_TX_Flag=1;
 uint8_t CAN_RX_Flag=0;
 uint8_t CAN_TX_Flag=0;
@@ -76,7 +77,7 @@ int16_t i16_Pedal_Torque=0;
 int32_t i32_Pedal_Torque_cumulated=0;
 int16_t i16_Current_Target=0;
 uint16_t ui16_slow_loop_counter=0;
-volatile uint16_t adcData[3]; //Buffer for ADC1 Input
+volatile uint16_t adcData[4]; //Buffer for ADC1 Input
 MotorState_t MS; //struct for motor state
 
 
@@ -160,17 +161,10 @@ int main(void)
          Error_Handler();
        }
   // Start ADC1 with DMA
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcData, 3);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcData, 4);
 
   /* USER CODE BEGIN 2 */
-  /*bool ReadBionxReg(int canid, uint16_t addr, uint16_t &ret )
-  {
-    CanMsg aMsg;
-    aMsg.id=canid;
-    aMsg.dlc=2;
-    aMsg.data[0]=0;
-    aMsg.data[1]=addr;
-    aCan.Write(aMsg);*/
+
   UART_RX_Buffer[0]=2;
   while(!CAN_RX_Flag){ //So lange Versionsanfrage senden, bis Antwort vom BionX-Controller kommt, dabei blinken.
   	  HAL_Delay(200);
@@ -228,6 +222,17 @@ int main(void)
 
 		  Timer3_Flag=0;
 		  ui16_slow_loop_counter++;
+		  //Bremseingang abfragen
+		  MS.Brake=HAL_GPIO_ReadPin(Brake_Pin, Brake_GPIO_Port);
+		  // hier ggf. noch entprellen?
+		  if(MS.Brake==0 && Brake_Flag_Old==1){
+
+			  if(MS.Assist_Level==0){ //Toggle
+				  if(MS.Perma_Regen)MS.Perma_Regen=0;
+				  else MS.Perma_Regen=1;
+			  }
+		  }
+		  Brake_Flag_Old=MS.Brake;
 
 
 
@@ -652,6 +657,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin, GPIO_PIN_RESET);
@@ -662,6 +668,31 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(Onboard_LED_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = Light_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(Light_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = PAS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = Brake_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = BatteryVoltage_Pin|Torque_Pin|BatteryCurrent_Pin|Throttle_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  //activate Interrupt for PAS Line
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
 }
 
@@ -708,6 +739,13 @@ static void MX_ADC1_Init(void)
   }
   sConfig.Channel = ADC_CHANNEL_2;
   sConfig.Rank = ADC_REGULAR_RANK_3;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfig.Channel = ADC_CHANNEL_3;
+  sConfig.Rank = ADC_REGULAR_RANK_4;
   sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {

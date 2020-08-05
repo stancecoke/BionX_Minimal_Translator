@@ -60,6 +60,27 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define Onboard_LED_Pin GPIO_PIN_13
 #define Onboard_LED_GPIO_Port GPIOC
+
+#define Brake_Pin GPIO_PIN_1
+#define Brake_GPIO_Port GPIOB
+
+#define Throttle_Pin GPIO_PIN_3
+#define Throttle_GPIO_Port GPIOA
+
+#define Torque_Pin GPIO_PIN_1
+#define Torque_GPIO_Port GPIOA
+
+#define BatteryVoltage_Pin GPIO_PIN_0
+#define BatteryVoltage_GPIO_Port GPIOA
+
+#define BatteryCurrent_Pin GPIO_PIN_2
+#define BatteryCurrent_GPIO_Port GPIOA
+
+#define Light_Pin GPIO_PIN_3
+#define Light_GPIO_Port GPIOB
+
+#define PAS_Pin GPIO_PIN_0 //for Exti0 interrupt. Px0 lines have to be considered, https://stm32f4-discovery.net/2014/08/stm32f4-external-interrupts-tutorial/
+#define PAS_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 #define CAL_BAT_V 1
 #define PULSES_PER_REVOLUTION 1
@@ -71,9 +92,9 @@ typedef struct
 	uint16_t       	Speed;
 	uint16_t        Power;
 	uint32_t        Gauge_Factor;
-	uint32_t          	u_d;
-	uint32_t          	u_q;
-	uint32_t          	u_abs;
+	uint8_t         Brake;
+	uint8_t         Perma_Regen;
+	uint8_t         C1;
 	uint32_t          	Battery_Current;
 	uint8_t 		hall_angle_detect_flag;
 	uint8_t 		char_dyn_adc_state;

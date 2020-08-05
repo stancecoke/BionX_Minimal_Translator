@@ -47,8 +47,17 @@ void display_update(MotorState_t* MS_U)
 {
 
   // prepare moving indication info
+	// B7: moving indication info
+	// (1 << 0) : none
+	// (1 << 1): throttle
+	// (1 << 2): none
+	// (1 << 3): cruise control
+	// (1 << 4): PAS
+	// (1 << 5): brake
+	// (1 << 6): none
+	// (1 << 7): none
   ui8_moving_indication = 0;
- // if (brake_is_set ()) { ui8_moving_indication |= (1 << 5); }
+  if (!MS_U->Brake||MS_U->Perma_Regen) { ui8_moving_indication |= (1 << 5); }
   //if (ebike_app_cruise_control_is_set ()) { ui8_moving_indication |= (1 << 3); }
   //if (throttle_is_set ()) { ui8_moving_indication |= (1 << 1); }
   //if (pas_is_set ()) { ui8_moving_indication |= (1 << 4); }
@@ -156,16 +165,16 @@ void check_message(MotorState_t* MS_D)
      lcd_configuration_variables.ui8_wheel_size = ((ui8_rx_buffer [4] & 192) >> 6) | ((ui8_rx_buffer [2] & 7) << 2);
      lcd_configuration_variables.ui8_max_speed = (10 + ((ui8_rx_buffer [2] & 248) >> 3)) | (ui8_rx_buffer [4] & 32);
      lcd_configuration_variables.ui8_power_assist_control_mode = ui8_rx_buffer [4] & 8;
-     lcd_configuration_variables.ui8_controller_max_current = (ui8_rx_buffer [7] & 15);
+     lcd_configuration_variables.ui8_controller_max_current = (ui8_rx_buffer [7] & 15); //unterste 4 Bits nach https://endless-sphere.com/forums/download/file.php?id=197184
+     lcd_configuration_variables.ui8_C1 = ((ui8_rx_buffer [6]>>3) & 7); //Bit 3,4,5
      MS_D->Assist_Level=lcd_configuration_variables.ui8_assist_level;
      MS_D->Gauge_Factor=lcd_configuration_variables.ui8_motor_characteristic;
+     MS_D->C1=lcd_configuration_variables.ui8_C1;
      if(lcd_configuration_variables.ui8_light){
-    	// HAL_GPIO_WritePin(LIGHT_GPIO_Port, LIGHT_Pin, GPIO_PIN_SET);
-    	// HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+    	HAL_GPIO_WritePin(Light_GPIO_Port, Light_Pin, GPIO_PIN_SET);
      }
      else{
-    	// HAL_GPIO_WritePin(LIGHT_GPIO_Port, LIGHT_Pin, GPIO_PIN_RESET);
-    	//HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+    	 HAL_GPIO_WritePin(Light_GPIO_Port, Light_Pin, GPIO_PIN_RESET);
      }
      display_update(MS_D);
    }
