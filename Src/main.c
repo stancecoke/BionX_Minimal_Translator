@@ -179,6 +179,8 @@ int main(void)
 		  }
   HAL_Delay(200);
 
+  MS.Gauge_Ext_Torq_Flag=0; //set torque source to external BB-sensor by default. Is overwritten by KT-LCD setting of P3 at runtime.
+
 
 
 
@@ -257,11 +259,7 @@ int main(void)
 		  if (ui16_slow_loop_counter>5){
 
 			  ui16_slow_loop_counter=0;
-#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
-			  i16_Current_Target= CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>FILTER);
-#endif
 
-#if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
 			  //Brake acitve, do constant regen
 			  if(!MS.Brake){
 				  i16_Current_Target = -CALIB_REGEN*MS.Regen_Factor*3;		//regen via brake lever
@@ -287,7 +285,7 @@ int main(void)
 			  if(i16_Current_Target>0 && i8_Throttle>0 && i8_Throttle>i16_Current_Target)i16_Current_Target=i8_Throttle;
 			  if(i16_Current_Target<0 && i8_Throttle<0 && i8_Throttle<i16_Current_Target)i16_Current_Target=i8_Throttle;
 
-#endif
+
 
 			 /* if (ADC_Flag){
 				  ADC_Flag=0;
@@ -410,7 +408,7 @@ int main(void)
 
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, "%ld, %d, %d, %d \r\n", i32_Gauge_Torque_cumulated, i16_Gauge_Torque, i16_Current_Target, i16_Gauge_Voltage);
+			  sprintf(UART_TX_Buffer, "%ld, %d, %d, %d, %d, %d, %d \r\n", i32_Gauge_Torque_cumulated, i16_Gauge_Torque, i16_Current_Target ,adcData[0], adcData[1], adcData[2], adcData[3]);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}

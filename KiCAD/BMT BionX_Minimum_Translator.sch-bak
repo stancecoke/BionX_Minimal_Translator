@@ -362,7 +362,7 @@ Wire Wire Line
 	6700 2750 6700 5250
 Connection ~ 6700 2750
 Wire Wire Line
-	6700 2750 7550 2750
+	6700 2750 7300 2750
 Wire Wire Line
 	4850 7550 6700 7550
 Wire Wire Line
@@ -586,24 +586,95 @@ $EndComp
 $Comp
 L Device:R R?
 U 1 1 5F28C11A
-P 7950 5650
-F 0 "R?" H 8020 5696 50  0000 L CNN
-F 1 "120" H 8020 5605 50  0000 L CNN
-F 2 "" V 7880 5650 50  0001 C CNN
-F 3 "~" H 7950 5650 50  0001 C CNN
-	1    7950 5650
+P 9400 5750
+F 0 "R?" H 9470 5796 50  0000 L CNN
+F 1 "120" H 9470 5705 50  0000 L CNN
+F 2 "" V 9330 5750 50  0001 C CNN
+F 3 "~" H 9400 5750 50  0001 C CNN
+	1    9400 5750
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	7400 5550 7800 5550
-Wire Wire Line
-	7800 5550 7800 5500
-Wire Wire Line
-	7800 5500 7950 5500
 Connection ~ 7400 5550
-Wire Wire Line
-	7950 5800 7450 5800
 Wire Wire Line
 	7450 5800 7450 5750
 Connection ~ 7450 5750
+$Comp
+L Connector:Conn_01x02_Female J?
+U 1 1 5F29F99C
+P 8700 5700
+F 0 "J?" H 8727 5676 50  0000 L CNN
+F 1 "CAN Terminator" H 8300 5850 50  0000 L CNN
+F 2 "" H 8700 5700 50  0001 C CNN
+F 3 "~" H 8700 5700 50  0001 C CNN
+	1    8700 5700
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	8850 5700 8900 5700
+Wire Wire Line
+	9100 5700 9100 5600
+Wire Wire Line
+	9100 5600 9400 5600
+Wire Wire Line
+	8850 5800 8900 5800
+Wire Wire Line
+	9250 5800 9250 5900
+Wire Wire Line
+	9250 5900 9400 5900
+$Comp
+L Connector:Conn_01x02_Male J?
+U 1 1 5F2B86D5
+P 8350 5700
+F 0 "J?" H 8322 5674 50  0000 R CNN
+F 1 "CAN Connector" H 8650 5500 50  0000 R CNN
+F 2 "" H 8350 5700 50  0001 C CNN
+F 3 "~" H 8350 5700 50  0001 C CNN
+	1    8350 5700
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	8150 5550 8150 5700
+Wire Wire Line
+	7450 5800 8150 5800
+Wire Wire Line
+	7400 5550 8150 5550
+Connection ~ 8900 5700
+Wire Wire Line
+	8900 5700 9100 5700
+Connection ~ 8900 5800
+Wire Wire Line
+	8900 5800 9250 5800
+$Comp
+L Connector:Conn_01x03_Female J?
+U 1 1 5F2F307C
+P 8150 3600
+F 0 "J?" H 8178 3626 50  0000 L CNN
+F 1 "Throttle connector" H 8178 3535 50  0000 L CNN
+F 2 "" H 8150 3600 50  0001 C CNN
+F 3 "~" H 8150 3600 50  0001 C CNN
+	1    8150 3600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7100 3150 7100 3700
+Wire Wire Line
+	7100 3700 7950 3700
+Connection ~ 7100 3150
+Wire Wire Line
+	7300 2750 7300 3500
+Wire Wire Line
+	7300 3500 7950 3500
+Connection ~ 7300 2750
+Wire Wire Line
+	7300 2750 7550 2750
+Wire Wire Line
+	7950 3600 7850 3600
+Wire Wire Line
+	7850 5000 3900 5000
+Wire Wire Line
+	3900 5000 3900 6000
+Wire Wire Line
+	3900 6000 3950 6000
+Wire Wire Line
+	7850 3600 7850 5000
 $EndSCHEMATC
