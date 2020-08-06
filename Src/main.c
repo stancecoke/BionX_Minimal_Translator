@@ -70,10 +70,15 @@ uint8_t CAN_RX_Flag=0;
 uint8_t CAN_TX_Flag=0;
 uint8_t Timer3_Flag=0;
 uint8_t ADC_Flag=0;
+uint8_t PAS_Flag=0;
 uint8_t Gauge_Offset_Flag=0;
 int8_t i8_Throttle=0; //must be scaled to valid values from -64 ... +64
-int16_t i16_Pedal_Torque=0;
-int32_t i32_Pedal_Torque_cumulated=0;
+int16_t i16_Gauge_Torque=0;
+uint16_t ui16_Ext_Torque=0;
+uint32_t ui16_Ext_Torque_Cumulated=0;
+int16_t i16_PAS_Counter=0;
+int16_t i16_PAS_Duration=0;
+int32_t i32_Gauge_Torque_cumulated=0;
 int16_t i16_Current_Target=0;
 uint16_t ui16_slow_loop_counter=0;
 volatile uint16_t adcData[4]; //Buffer for ADC1 Input
@@ -144,10 +149,11 @@ int main(void)
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
   kunteng_init();
 #endif
-  /* Run the ADC calibration */
-  if (HAL_ADCEx_Calibration_Start(&hadc1) != HAL_OK)
+  /* Run the ADC CALIB_GAUGEration */
+
+
   {
-    /* Calibration Error */
+    /* CALIB_GAUGEration Error */
     Error_Handler();
   }
 
@@ -233,28 +239,41 @@ int main(void)
 			  }
 		  }
 		  Brake_Flag_Old=MS.Brake;
-
+		  //read in throttle signal
 		  i8_Throttle=map(adcData[3],THROTTLE_MIN,THROTTLE_MAX, 0, 63); //map throttle ADC-value to valid LEVEL range
 
+		  //process PAS signal
+		  if (PAS_Flag){
+			  i16_PAS_Duration=i16_PAS_Counter;
+			  i16_PAS_Counter=0;
+			  ui16_Ext_Torque=map(adcData[1],EXT_TORQUE_MIN, EXT_TORQUE_MAX, 0, 1024); //map throttle ADC-value to valid LEVEL range
+			  ui16_Ext_Torque_Cumulated-=ui16_Ext_Torque_Cumulated>>FILTER;
+			  ui16_Ext_Torque_Cumulated+=ui16_Ext_Torque;
 
+		  }
 
 		  if (ui16_slow_loop_counter>5){
 
 			  ui16_slow_loop_counter=0;
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
-			  i16_Current_Target= CALIB*(i32_Pedal_Torque_cumulated>>FILTER);
+			  i16_Current_Target= CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>FILTER);
 #endif
 
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
+			  //Brake acitve, do constant regen
 			  if(!MS.Brake){
 				  i16_Current_Target = -CALIB_REGEN*MS.Regen_Factor*3;		//regen via brake lever
 				  i8_Throttle=-i8_Throttle;
 			  }
+			  //Perma Regen active, do regen according to assist level
 			  else if(MS.Perma_Regen){
 				  i16_Current_Target = -CALIB_REGEN*MS.Regen_Factor*MS.Assist_Level/5;		//permanent regen switched by tip on brake lever in level 0
 				  i8_Throttle=-i8_Throttle;
 			  }
-			  else i16_Current_Target = (CALIB*(i32_Pedal_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
+			  // if internal Gauge is active (selected by P3), calculate current target form Gauge Value,
+			  else if(MS.Gauge_Ext_Torq_Flag)i16_Current_Target = (CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
+			  // if external torque sensor is active
+			  else i16_Current_Target=CALIB_EXT_TORQUE*(ui16_Ext_Torque_Cumulated>>FILTER)/i16_PAS_Duration;
 
 			  // limit Current_Target to valid range for LEVEL
 			  if(i16_Current_Target>63)i16_Current_Target=63;
@@ -356,9 +375,9 @@ int main(void)
 		  switch (RxData[1]) {
 
 		  case REG_MOTOR_TORQUE_GAUGE_VALUE:
-			  i16_Pedal_Torque=RxData[3];
-			  i32_Pedal_Torque_cumulated -= (i32_Pedal_Torque_cumulated>>FILTER);
-			  i32_Pedal_Torque_cumulated += i16_Pedal_Torque;
+			  i16_Gauge_Torque=RxData[3];
+			  i32_Gauge_Torque_cumulated -= (i32_Gauge_Torque_cumulated>>FILTER);
+			  i32_Gauge_Torque_cumulated += i16_Gauge_Torque;
 
 			  break;
 
@@ -386,7 +405,7 @@ int main(void)
 
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, "%ld, %d, %d, %d \r\n", i32_Pedal_Torque_cumulated, i16_Pedal_Torque, i16_Current_Target, i16_Gauge_Voltage);
+			  sprintf(UART_TX_Buffer, "%ld, %d, %d, %d \r\n", i32_Gauge_Torque_cumulated, i16_Gauge_Torque, i16_Current_Target, i16_Gauge_Voltage);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
@@ -830,6 +849,11 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 
 }
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	PAS_Flag=0;
+}
+
 void Send_CAN_Request(uint8_t command){
 
 	TxHeader.StdId=ID_MOTOR;
@@ -845,6 +869,8 @@ void Send_CAN_Request(uint8_t command){
 
 
 }
+
+
 
 void Send_CAN_Command(uint8_t function, uint16_t value){
 	TxHeader.StdId=ID_MOTOR;

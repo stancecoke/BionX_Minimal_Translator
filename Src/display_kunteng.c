@@ -165,11 +165,13 @@ void check_message(MotorState_t* MS_D)
      lcd_configuration_variables.ui8_wheel_size = ((ui8_rx_buffer [4] & 192) >> 6) | ((ui8_rx_buffer [2] & 7) << 2);
      lcd_configuration_variables.ui8_max_speed = (10 + ((ui8_rx_buffer [2] & 248) >> 3)) | (ui8_rx_buffer [4] & 32);
      lcd_configuration_variables.ui8_power_assist_control_mode = ui8_rx_buffer [4] & 8;
+     lcd_configuration_variables.ui8_P3 = ui8_rx_buffer [4]>>3 & 1;
      lcd_configuration_variables.ui8_controller_max_current = (ui8_rx_buffer [7] & 15); //unterste 4 Bits nach https://endless-sphere.com/forums/download/file.php?id=197184
      lcd_configuration_variables.ui8_C1 = ((ui8_rx_buffer [6]>>3) & 7); //Bit 3,4,5
      MS_D->Assist_Level=lcd_configuration_variables.ui8_assist_level;
      MS_D->Gauge_Factor=lcd_configuration_variables.ui8_motor_characteristic;
      MS_D->Regen_Factor=lcd_configuration_variables.ui8_C1;
+     MS_D->Gauge_Ext_Torq_Flag=lcd_configuration_variables.ui8_P3;
      if(lcd_configuration_variables.ui8_light){
     	HAL_GPIO_WritePin(Light_GPIO_Port, Light_Pin, GPIO_PIN_SET);
      }
