@@ -228,6 +228,8 @@ int main(void)
 
 		  Timer3_Flag=0;
 		  ui16_slow_loop_counter++;
+		  if (i16_PAS_Counter<PAS_TIMEOUT)i16_PAS_Counter++;
+
 		  //Bremseingang abfragen
 		  MS.Brake=HAL_GPIO_ReadPin(Brake_GPIO_Port, Brake_Pin);
 		  // hier ggf. noch entprellen?
@@ -273,7 +275,10 @@ int main(void)
 			  // if internal Gauge is active (selected by P3), calculate current target form Gauge Value,
 			  else if(MS.Gauge_Ext_Torq_Flag)i16_Current_Target = (CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
 			  // if external torque sensor is active
-			  else i16_Current_Target=CALIB_EXT_TORQUE*(ui16_Ext_Torque_Cumulated>>FILTER)/i16_PAS_Duration;
+			  else {
+				  i16_Current_Target=CALIB_EXT_TORQUE*(ui16_Ext_Torque_Cumulated>>FILTER)/i16_PAS_Duration;
+				  if(i16_PAS_Counter>PAS_TIMEOUT-1)i16_Current_Target=0; //Switch off power, if pedals are not turning
+			  }
 
 			  // limit Current_Target to valid range for LEVEL
 			  if(i16_Current_Target>63)i16_Current_Target=63;

@@ -19,6 +19,8 @@
 #define EXT_TORQUE_MIN 700
 #define EXT_TORQUE_MAX 3600
 
+#define PAS_TIMEOUT 300
+
 //predefine Display Types
 #define DISPLAY_TYPE_KUNTENG (1<<1)							// For use with Kunteng LCD Displays
 #define DISPLAY_TYPE_DEBUG (1<<0)							// For ASCII-Output in Debug mode);
