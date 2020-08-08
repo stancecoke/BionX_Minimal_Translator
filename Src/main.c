@@ -71,6 +71,8 @@ uint8_t CAN_TX_Flag=0;
 uint8_t Timer3_Flag=0;
 uint8_t ADC_Flag=0;
 uint8_t PAS_Flag=0;
+char ch_GaugeVolatage_Lo=0;
+char ch_GaugeVolatage_Hi=0;
 uint8_t Gauge_Offset_Flag=0;
 int8_t i8_Throttle=0; //must be scaled to valid values from -64 ... +64
 int16_t i16_Gauge_Torque=0;
@@ -83,7 +85,6 @@ int16_t i16_Current_Target=0;
 uint16_t ui16_slow_loop_counter=0;
 volatile uint16_t adcData[4]; //Buffer for ADC1 Input
 MotorState_t MS; //struct for motor state
-
 
 
 CAN_TxHeaderTypeDef   TxHeader;
@@ -180,7 +181,7 @@ int main(void)
   HAL_Delay(200);
 
   MS.Gauge_Ext_Torq_Flag=0; //set torque source to external BB-sensor by default. Is overwritten by KT-LCD setting of P3 at runtime.
-
+  MS.Assist_Level=3;		//set Assistlevel to 3 as default value
 
 
 
@@ -335,7 +336,7 @@ int main(void)
 						  Send_CAN_Command(REG_MOTOR_ASSIST_LEVEL,i16_Current_Target);
 					  }
 					  else{
-						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_MAX_VOLTAGE);
+						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_HI);
 					  }
 #endif
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
@@ -348,15 +349,15 @@ int main(void)
 				  break;
 
 				  case 2:
-				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
-					  Send_CAN_Request(REG_MOTOR_STATUS_SPEED);
+
+					  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO); //REG_MOTOR_STATUS_SPEED
 
 					  k=3;
 				  break;
 
 				  case 3:
-				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
-					  Send_CAN_Request(REG_MOTOR_STATUS_POWER_METER);
+
+					  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_HI); //REG_MOTOR_STATUS_POWER_METER
 
 					  k=0;
 				  break;
@@ -398,6 +399,20 @@ int main(void)
 
 			  break;
 
+		  case REG_MOTOR_TORQUE_GAUGE_VOLTAGE_HI:
+
+			  ch_GaugeVolatage_Hi=RxData[3];
+
+
+			  break;
+
+		  case REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO:
+
+			  ch_GaugeVolatage_Lo=RxData[3];
+
+
+			  break;
+
 		  }
 
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
@@ -408,7 +423,7 @@ int main(void)
 
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, "%ld, %d, %d, %d, %d, %d, %d \r\n", i32_Gauge_Torque_cumulated, i16_Gauge_Torque, i16_Current_Target ,adcData[0], adcData[1], adcData[2], adcData[3]);
+			  sprintf(UART_TX_Buffer, "%ld, %d, %d, %d, %d, %d, %d, %d \r\n", i32_Gauge_Torque_cumulated, (int16_t)(ch_GaugeVolatage_Hi<<8)|ch_GaugeVolatage_Lo, i16_Gauge_Torque, i16_Current_Target ,adcData[0], adcData[1], adcData[2], adcData[3]);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
@@ -724,11 +739,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
+/* already defined in msp.c
   GPIO_InitStruct.Pin = BatteryVoltage_Pin|Torque_Pin|BatteryCurrent_Pin|Throttle_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  */
 
   //activate Interrupt for PAS Line
   HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
@@ -751,12 +767,12 @@ static void MX_ADC1_Init(void)
   /** Common config
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_TRGO;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.NbrOfConversion = 4;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
