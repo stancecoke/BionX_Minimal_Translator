@@ -763,4 +763,38 @@ Wire Wire Line
 Wire Wire Line
 	5850 2200 6300 2200
 Connection ~ 5850 2200
+$Comp
+L Device:CP C?
+U 1 1 5F2F700A
+P 8700 4850
+F 0 "C?" H 8818 4896 50  0000 L CNN
+F 1 "10µ" H 8818 4805 50  0000 L CNN
+F 2 "" H 8738 4700 50  0001 C CNN
+F 3 "~" H 8700 4850 50  0001 C CNN
+	1    8700 4850
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:CP C?
+U 1 1 5F2F7EDF
+P 5500 2350
+F 0 "C?" H 5618 2396 50  0000 L CNN
+F 1 "10µ" H 5618 2305 50  0000 L CNN
+F 2 "" H 5538 2200 50  0001 C CNN
+F 3 "~" H 5500 2350 50  0001 C CNN
+	1    5500 2350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5500 2200 5850 2200
+Wire Wire Line
+	5500 2500 5850 2500
+Connection ~ 5850 2500
+Wire Wire Line
+	8700 4700 8700 4600
+Wire Wire Line
+	8700 4600 8250 4600
+Wire Wire Line
+	8700 5000 8250 5000
+Connection ~ 8250 5000
 $EndSCHEMATC
