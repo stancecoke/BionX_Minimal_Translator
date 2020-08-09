@@ -97,7 +97,7 @@ typedef struct
 	uint8_t         Regen_Factor;
 	uint32_t        Battery_Current;
 	uint8_t 		Gauge_Ext_Torq_Flag;
-	uint8_t 		char_dyn_adc_state;
+	uint8_t 		MotorTemperature;
 	uint8_t 		Assist_Level;
 
 }MotorState_t;

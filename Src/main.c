@@ -283,8 +283,8 @@ int main(void)
 			  if(i16_Current_Target>63)i16_Current_Target=63;
 			  if(i16_Current_Target<-63)i16_Current_Target=-63;
 			  // Throttle override for regen and assist
-			  if(i16_Current_Target>0 && i8_Throttle>0 && i8_Throttle>i16_Current_Target)i16_Current_Target=i8_Throttle;
-			  if(i16_Current_Target<0 && i8_Throttle<0 && i8_Throttle<i16_Current_Target)i16_Current_Target=i8_Throttle;
+			  if(i16_Current_Target>=0 && i8_Throttle>0 && i8_Throttle>i16_Current_Target)i16_Current_Target=i8_Throttle;
+			  if(i16_Current_Target<=0 && i8_Throttle<0 && i8_Throttle<i16_Current_Target)i16_Current_Target=i8_Throttle;
 
 
 
@@ -326,7 +326,7 @@ int main(void)
 						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VALUE);
 
 #endif
-					  k=1;
+					  k++;
 				  break;
 
 				  case 1:
@@ -336,7 +336,7 @@ int main(void)
 						  Send_CAN_Command(REG_MOTOR_ASSIST_LEVEL,i16_Current_Target);
 					  }
 					  else{
-						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_HI);
+						  Send_CAN_Request(REG_MOTOR_STATUS_TEMPERATURE);
 					  }
 #endif
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
@@ -345,19 +345,33 @@ int main(void)
 
 #endif
 
-					  k=2;
+					  k++;
 				  break;
 
 				  case 2:
 
 					  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO); //REG_MOTOR_STATUS_SPEED
 
-					  k=3;
+					  k++;
 				  break;
 
 				  case 3:
 
 					  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_HI); //REG_MOTOR_STATUS_POWER_METER
+
+					  k++;
+				  break;
+
+				  case 4:
+
+					  Send_CAN_Request(REG_MOTOR_STATUS_SPEED);
+
+					  k++;
+				  break;
+
+				  case 5:
+
+					  Send_CAN_Request(REG_MOTOR_STATUS_POWER_METER);
 
 					  k=0;
 				  break;
@@ -413,6 +427,12 @@ int main(void)
 
 			  break;
 
+		  case REG_MOTOR_STATUS_TEMPERATURE:
+
+			  MS.MotorTemperature=RxData[3];
+
+			  break;
+
 		  }
 
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
@@ -423,7 +443,7 @@ int main(void)
 
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, "%ld, %d, %d, %d, %d, %d, %d, %d \r\n", i32_Gauge_Torque_cumulated, (int16_t)(ch_GaugeVolatage_Hi<<8)|ch_GaugeVolatage_Lo, i16_Gauge_Torque, i16_Current_Target ,adcData[0], adcData[1], adcData[2], adcData[3]);
+			  sprintf(UART_TX_Buffer, " %d, %ld, %d, %d, %d, %d, %d, %d, %d, %d, %d \r\n", i8_Throttle, i32_Gauge_Torque_cumulated, MS.Power, MS.Speed, (int16_t)(ch_GaugeVolatage_Hi<<8)|ch_GaugeVolatage_Lo, i16_Gauge_Torque, i16_Current_Target ,adcData[0], adcData[1], adcData[2], adcData[3]);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}

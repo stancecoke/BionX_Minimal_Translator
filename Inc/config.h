@@ -13,8 +13,8 @@
 #define CALIB_REGEN 1 			//calibration factor for regen
 #define FILTER 4 				//average from 2^x samples
 
-#define THROTTLE_MIN 700
-#define THROTTLE_MAX 3600
+#define THROTTLE_MIN 640
+#define THROTTLE_MAX 3450
 
 #define EXT_TORQUE_MIN 700
 #define EXT_TORQUE_MAX 3600
