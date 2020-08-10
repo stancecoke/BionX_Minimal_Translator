@@ -401,7 +401,7 @@ int main(void)
 
 		  case REG_MOTOR_STATUS_SPEED:
 
-			  MS.Speed=15000/RxData[3];
+			  MS.Speed=RxData[3];
 
 
 			  break;
