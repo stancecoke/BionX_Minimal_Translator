@@ -23,6 +23,7 @@ typedef struct _lcd_configuration_variables
   uint8_t ui8_power_assist_control_mode;
   uint8_t ui8_controller_max_current;
   uint8_t ui8_C1;
+  uint8_t ui8_P2;
   uint8_t ui8_P3;
 } struc_lcd_configuration_variables;
 
@@ -39,12 +40,7 @@ typedef struct _lcd_configuration_variables
 #define LI_ION_CELL_VOLTS_0 3.10 // 3.27
 #define LI_ION_CELL_VOLTS_MIN 3.10
 
-#define BATTERY_PACK_VOLTS_100	(LI_ION_CELL_VOLTS_100 * BATTERY_LI_ION_CELLS_NUMBER) * 256
-#define BATTERY_PACK_VOLTS_80 	(LI_ION_CELL_VOLTS_80 * BATTERY_LI_ION_CELLS_NUMBER) * 256
-#define BATTERY_PACK_VOLTS_60	(LI_ION_CELL_VOLTS_60 * BATTERY_LI_ION_CELLS_NUMBER) * 256
-#define BATTERY_PACK_VOLTS_40	(LI_ION_CELL_VOLTS_40 * BATTERY_LI_ION_CELLS_NUMBER) * 256
-#define BATTERY_PACK_VOLTS_20	(LI_ION_CELL_VOLTS_20 * BATTERY_LI_ION_CELLS_NUMBER) * 256
-#define BATTERY_PACK_VOLTS_0	(LI_ION_CELL_VOLTS_0 * BATTERY_LI_ION_CELLS_NUMBER) * 256
+
 
 #define ADC_BATTERY_VOLTAGE_K 73 // 0.272 << 8
 #define BATTERY_LI_ION_CELLS_NUMBER 10

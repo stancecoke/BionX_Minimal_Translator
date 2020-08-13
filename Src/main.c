@@ -266,7 +266,7 @@ int main(void)
 
 			  //Brake acitve, do constant regen
 			  if(!MS.Brake){
-				  i16_Current_Target = (-CALIB_REGEN*MS.Regen_Factor)>>3;		//regen via brake lever
+				  i16_Current_Target = (-CALIB_REGEN*(MS.Regen_Factor+1))>>3;		//regen via brake lever
 				  i8_Throttle=-i8_Throttle;
 			  }
 			  //Perma Regen active, do regen according to assist level

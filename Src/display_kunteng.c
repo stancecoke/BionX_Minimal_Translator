@@ -26,13 +26,22 @@ uint8_t ui8_msg_received=0;
 uint8_t ui8_InitFlag=0;
 uint8_t ui8_Initial_Max_Speed=0;
 uint8_t ui8_Initial_Wheel_Size=0;
+uint8_t ui8_Initial_Number_of_cells=0;
 uint16_t ui16_wheel_circumference = 2200;
+uint8_t ui8_Number_of_Cells[6]={10,13,0,0,0,0};
+uint16_t BATTERY_PACK_VOLTS_100;
+uint16_t BATTERY_PACK_VOLTS_80;
+uint16_t BATTERY_PACK_VOLTS_60;
+uint16_t BATTERY_PACK_VOLTS_40;
+uint16_t BATTERY_PACK_VOLTS_20;
+uint16_t BATTERY_PACK_VOLTS_0;
 
 volatile struc_lcd_configuration_variables lcd_configuration_variables;
 
 UART_HandleTypeDef huart1;
 
 uint16_t GetWheelCircumference(uint8_t Size);
+void SetVoltagePercentage(uint8_t cells);
 
 uint8_t GetRXBuffer(){
 	return ui8_rx_buffer[0];
@@ -159,6 +168,7 @@ void check_message(MotorState_t* MS_D)
      lcd_configuration_variables.ui8_wheel_size = ((ui8_rx_buffer [4] & 192) >> 6) | ((ui8_rx_buffer [2] & 7) << 2);
      lcd_configuration_variables.ui8_max_speed = (10 + ((ui8_rx_buffer [2] & 248) >> 3)) | (ui8_rx_buffer [4] & 32);
      lcd_configuration_variables.ui8_power_assist_control_mode = ui8_rx_buffer [4] & 8;
+     lcd_configuration_variables.ui8_P2 = ui8_rx_buffer [4] & 0x07;
      lcd_configuration_variables.ui8_P3 = ui8_rx_buffer [4]>>3 & 1;
      lcd_configuration_variables.ui8_controller_max_current = (ui8_rx_buffer [7] & 15); //unterste 4 Bits nach https://endless-sphere.com/forums/download/file.php?id=197184
      lcd_configuration_variables.ui8_C1 = ((ui8_rx_buffer [6]>>3) & 7); //Bit 3,4,5
@@ -177,7 +187,9 @@ void check_message(MotorState_t* MS_D)
      if(!ui8_InitFlag){
     	ui8_Initial_Max_Speed = lcd_configuration_variables.ui8_max_speed;
     	ui8_Initial_Wheel_Size = lcd_configuration_variables.ui8_wheel_size;
+    	ui8_Initial_Number_of_cells = lcd_configuration_variables.ui8_P2;
     	ui16_wheel_circumference = GetWheelCircumference(lcd_configuration_variables.ui8_wheel_size);
+    	SetVoltagePercentage(lcd_configuration_variables.ui8_P2);
     	ui8_InitFlag=1;
      }
      else{
@@ -193,6 +205,10 @@ void check_message(MotorState_t* MS_D)
     		 Send_CAN_Command(REG_MOTOR_GEOMETRY_CIRC_LO, (ui16_wheel_circumference & 0xFF));
     		 ui8_Initial_Wheel_Size = lcd_configuration_variables.ui8_wheel_size;
     	 }
+    	 if(ui8_Initial_Number_of_cells != lcd_configuration_variables.ui8_P2){
+    		 SetVoltagePercentage(lcd_configuration_variables.ui8_P2);
+    		 ui8_Initial_Number_of_cells = lcd_configuration_variables.ui8_P2;
+    	 }
 
      }
      display_update(MS_D);
@@ -200,6 +216,15 @@ void check_message(MotorState_t* MS_D)
 
    //HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&ui8_rx_buffer, 13);
  }
+
+void SetVoltagePercentage(uint8_t cells){
+BATTERY_PACK_VOLTS_100 = (uint16_t)(LI_ION_CELL_VOLTS_100 * (float)ui8_Number_of_Cells[cells]*256.0);
+BATTERY_PACK_VOLTS_80 =	(uint16_t)(LI_ION_CELL_VOLTS_80 * (float)ui8_Number_of_Cells[cells]*256.0);
+BATTERY_PACK_VOLTS_60 = (uint16_t)(LI_ION_CELL_VOLTS_60 * (float)ui8_Number_of_Cells[cells]*256.0);
+BATTERY_PACK_VOLTS_40 =	(uint16_t)(LI_ION_CELL_VOLTS_40 * (float)ui8_Number_of_Cells[cells]*256.0);
+BATTERY_PACK_VOLTS_20 =	(uint16_t)(LI_ION_CELL_VOLTS_20 * (float)ui8_Number_of_Cells[cells]*256.0);
+BATTERY_PACK_VOLTS_0 =	(uint16_t)(LI_ION_CELL_VOLTS_0 * (float)ui8_Number_of_Cells[cells]*256.0);
+}
 
 uint16_t GetWheelCircumference(uint8_t Size){
     /*
