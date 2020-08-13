@@ -6,6 +6,7 @@
  */
 
 #include "main.h"
+#include "CAN-Registers.h"
 #include "display_kunteng.h"
 #include "stm32f1xx_hal.h"
 
@@ -22,11 +23,16 @@ uint8_t ui8_byte_received;
 uint8_t ui8_moving_indication = 0;
 uint8_t ui8_UARTCounter = 0;
 uint8_t ui8_msg_received=0;
+uint8_t ui8_InitFlag=0;
+uint8_t ui8_Initial_Max_Speed=0;
+uint8_t ui8_Initial_Wheel_Size=0;
+uint16_t ui16_wheel_circumference = 2200;
 
 volatile struc_lcd_configuration_variables lcd_configuration_variables;
 
 UART_HandleTypeDef huart1;
 
+uint16_t GetWheelCircumference(uint8_t Size);
 
 uint8_t GetRXBuffer(){
 	return ui8_rx_buffer[0];
@@ -63,19 +69,7 @@ void display_update(MotorState_t* MS_U)
   //if (pas_is_set ()) { ui8_moving_indication |= (1 << 4); }
 
 
-#ifdef SPEEDSENSOR_EXTERNAL
-  if(ui16_SPEED>65000){ui16_wheel_period_ms=4500;}
-  else{
-  ui16_wheel_period_ms = (uint16_t) ((float)ui16_SPEED/((float)PWM_CYCLES_SECOND/1000.0)); //must be /1000 devided in /125/8 for better resolution
-  }
-#endif
 
-#ifdef SPEEDSENSOR_INTERNAL
-  if(ui32_erps_filtered==0){ui16_wheel_period_ms=4500;}
-    else{
-  ui16_wheel_period_ms=(uint16_t)(1000.0*(float)GEAR_RATIO/(float)ui32_erps_filtered);
-    }
-#endif
 
   // calc battery pack state of charge (SOC)
   ui32_battery_volts =  (MS_U->Voltage*CAL_BAT_V*256)/10000;  //hier noch die richtige Kalibrierung einbauen (*256 für bessere Auflösung)
@@ -178,8 +172,92 @@ void check_message(MotorState_t* MS_D)
      else{
     	 HAL_GPIO_WritePin(Light_GPIO_Port, Light_Pin, GPIO_PIN_RESET);
      }
+
+     if(!ui8_InitFlag){
+    	ui8_Initial_Max_Speed = lcd_configuration_variables.ui8_max_speed;
+    	ui8_Initial_Wheel_Size = lcd_configuration_variables.ui8_wheel_size;
+    	ui8_InitFlag=1;
+     }
+     else{
+    	 if(ui8_Initial_Max_Speed != lcd_configuration_variables.ui8_max_speed){
+    		 Send_CAN_Command(REG_MOTOR_PROTECT_UNLOCK , MOTOR_PROTECT_UNLOCK_KEY);
+    		 Send_CAN_Command(REG_MOTOR_ASSIST_MAXSPEED, lcd_configuration_variables.ui8_max_speed);
+    		 ui8_Initial_Max_Speed = lcd_configuration_variables.ui8_max_speed;
+    	 }
+    	 if(ui8_Initial_Wheel_Size != lcd_configuration_variables.ui8_wheel_size){
+    		 ui16_wheel_circumference = GetWheelCircumference(lcd_configuration_variables.ui8_wheel_size);
+    		 Send_CAN_Command(REG_MOTOR_PROTECT_UNLOCK , MOTOR_PROTECT_UNLOCK_KEY);
+    		 Send_CAN_Command(REG_MOTOR_GEOMETRY_CIRC_HI, (ui16_wheel_circumference>>8));
+    		 Send_CAN_Command(REG_MOTOR_GEOMETRY_CIRC_LO, (ui16_wheel_circumference & 0xFF));
+    		 ui8_Initial_Wheel_Size = lcd_configuration_variables.ui8_wheel_size;
+    	 }
+
+     }
      display_update(MS_D);
    }
 
    //HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&ui8_rx_buffer, 13);
  }
+
+uint16_t GetWheelCircumference(uint8_t Size){
+    /*
+    wheel size:
+    0x0e-10",	798
+	0x02-12",	958
+	0x06-14",	1117
+    0x00-16",	1277
+    0x04-18",	1436
+    0x08-20",	1596
+    0x0c-22",	1756
+    0x10-24",	1915
+    0x14"-26",	2075
+    0x18-700c	2234
+     */
+	switch (Size) {
+
+		case 0x0E:
+			return 798;
+			break;
+
+		case 0x02:
+			return 958;
+			break;
+
+		case 0x06:
+			return 1117;
+			break;
+
+		case 0x00:
+			return 1277;
+			break;
+
+		case 0x04:
+			return 1436;
+			break;
+
+		case 0x08:
+			return 1596;
+			break;
+
+		case 0x0C:
+			return 1756;
+			break;
+
+		case 0x10:
+			return 1915;
+			break;
+
+		case 0x14:
+			return 2075;
+			break;
+
+		case 0x18:
+			return 2234;
+			break;
+
+		default:
+			return 2200;
+			break;
+
+	}
+}

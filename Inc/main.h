@@ -102,6 +102,9 @@ typedef struct
 
 }MotorState_t;
 
+void Send_CAN_Request(uint8_t command);
+void Send_CAN_Command(uint8_t function, uint16_t value);
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

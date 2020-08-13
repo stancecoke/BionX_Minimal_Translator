@@ -103,8 +103,7 @@ static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
 
-void Send_CAN_Request(uint8_t command);
-void Send_CAN_Command(uint8_t function, uint16_t value);
+
 int32_t map (int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
 /* USER CODE BEGIN PFP */
 
