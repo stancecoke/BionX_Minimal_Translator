@@ -644,6 +644,12 @@
 #define REG_MOTOR_STATUS_5V_VOLTAGE_HI                         0x74 //- [unit:V, factor:0.001]
 #define REG_MOTOR_STATUS_5V_VOLTAGE_LO                         0x75
 
+#define REG_MOTOR_CONFIG_MAX_DISCHARGE_HI                      0x7A // Maximum drawn current on vPower [unit:A, factor:0.001]
+#define REG_MOTOR_CONFIG_MAX_DISCHARGE_LO                      0x7B //
+
+#define REG_MOTOR_CONFIG_MAX_CHARGE_HI                         0x7C //Maximum regen. current on vPower [unit:A, factor:0.001]
+#define REG_MOTOR_CONFIG_MAX_CHARGE_LO                         0x7D //
+
 #define REG_MOTOR_STATISTIC_MAX_POWER_VOLTAGE_HI               0x80 //- [unit:V, factor:0.001]
 #define REG_MOTOR_STATISTIC_MAX_POWER_VOLTAGE_LO               0x81
 

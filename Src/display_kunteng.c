@@ -79,7 +79,7 @@ void display_update(MotorState_t* MS_U)
   else if (ui32_battery_volts > ((uint16_t) BATTERY_PACK_VOLTS_20)) { ui8_battery_soc = 4; } // 1 bar
   else { ui8_battery_soc = 3; } // empty
 
-  ui16_wheel_period_ms = (MS_U->Speed*PULSES_PER_REVOLUTION)>>4; //hier noch die richtige Kalibrierung einbauen
+  ui16_wheel_period_ms = 6600/MS_U->Speed; //(1000*60/9,091)/value of REG_MOTOR_STATUS_SPEED.
 
 ui8_tx_buffer [0] = 65;
   // B1: battery level
@@ -111,7 +111,7 @@ ui8_tx_buffer [0] = 65;
   //ui8_tx_buffer [8] =  (uint8_t)(((ui16_BatteryCurrent-ui16_current_cal_b+1)<<2)/current_cal_a);
   ui8_tx_buffer [8] =  (uint8_t)(MS_U->Power);   //Kalibrierung muß angepasst werden 13W pro digit
   // B9: motor temperature
-  //ui8_tx_buffer [9] = i8_motor_temperature-15; //according to documentation at endless sphere
+  ui8_tx_buffer [9] = MS_U->MotorTemperature-15; //according to documentation at endless sphere
   // B10 and B11: 0
   ui8_tx_buffer [10] = 0;
   ui8_tx_buffer [11] = 0;
@@ -172,10 +172,12 @@ void check_message(MotorState_t* MS_D)
      else{
     	 HAL_GPIO_WritePin(Light_GPIO_Port, Light_Pin, GPIO_PIN_RESET);
      }
+     // Send new settings to Motor Controller, if changed
 
      if(!ui8_InitFlag){
     	ui8_Initial_Max_Speed = lcd_configuration_variables.ui8_max_speed;
     	ui8_Initial_Wheel_Size = lcd_configuration_variables.ui8_wheel_size;
+    	ui16_wheel_circumference = GetWheelCircumference(lcd_configuration_variables.ui8_wheel_size);
     	ui8_InitFlag=1;
      }
      else{

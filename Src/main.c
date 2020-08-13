@@ -262,12 +262,12 @@ int main(void)
 
 			  //Brake acitve, do constant regen
 			  if(!MS.Brake){
-				  i16_Current_Target = -CALIB_REGEN*MS.Regen_Factor*3;		//regen via brake lever
+				  i16_Current_Target = (-CALIB_REGEN*MS.Regen_Factor)>>3;		//regen via brake lever
 				  i8_Throttle=-i8_Throttle;
 			  }
 			  //Perma Regen active, do regen according to assist level
 			  else if(MS.Perma_Regen){
-				  i16_Current_Target = -CALIB_REGEN*MS.Regen_Factor*MS.Assist_Level/5;		//permanent regen switched by tip on brake lever in level 0
+				  i16_Current_Target = (-CALIB_REGEN*MS.Assist_Level)/5;		//permanent regen switched by tip on brake lever in level 0
 				  i8_Throttle=-i8_Throttle;
 			  }
 			  // if internal Gauge is active (selected by P3), calculate current target form Gauge Value,
@@ -369,6 +369,13 @@ int main(void)
 				  break;
 
 				  case 5:
+
+					  Send_CAN_Request(REG_MOTOR_STATUS_TEMPERATURE);
+
+					  k++;
+				  break;
+
+				  case 6:
 
 					  Send_CAN_Request(REG_MOTOR_STATUS_POWER_METER);
 
