@@ -61,8 +61,8 @@ char UART_TX_Buffer[100];
 char UART_RX_Buffer[100];
 uint8_t i=0; //counter for loops
 uint8_t j=0; //counter for autozero at startup
-uint8_t k=0; //counter for CAN_TX
-uint8_t l=0; //delay-counter
+uint8_t k=0; //counter for fast CAN_TX
+uint8_t l=0; //counter for slow CAN_TX
 uint8_t UART_RX_Flag=0;
 uint8_t Brake_Flag_Old=0;
 uint8_t UART_TX_Flag=1;
@@ -71,8 +71,10 @@ uint8_t CAN_TX_Flag=0;
 uint8_t Timer3_Flag=0;
 uint8_t ADC_Flag=0;
 uint8_t PAS_Flag=0;
-char ch_GaugeVolatage_Lo=0;
-char ch_GaugeVolatage_Hi=0;
+char ch_GaugeVoltage_Lo=0;
+char ch_GaugeVoltage_Hi=0;
+char ch_BatteryVoltage_Lo=0;
+char ch_BatteryVoltage_Hi=0;
 uint8_t Gauge_Offset_Flag=0;
 int8_t i8_Throttle=0; //must be scaled to valid values from -64 ... +64
 int16_t i16_Gauge_Torque=0;
@@ -232,6 +234,8 @@ int main(void)
 		  ui16_slow_loop_counter++;
 		  if (i16_PAS_Counter<PAS_TIMEOUT)i16_PAS_Counter++;
 
+		  MS.Voltage=ch_BatteryVoltage_Hi<<8|ch_BatteryVoltage_Hi; //Battery Voltage in mV
+
 		  //Bremseingang abfragen
 		  MS.Brake=HAL_GPIO_ReadPin(Brake_GPIO_Port, Brake_Pin);
 		  // hier ggf. noch entprellen?
@@ -361,28 +365,41 @@ int main(void)
 					  k++;
 				  break;
 
+//slow CAN_TX
 				  case 4:
+					  switch (l) {
 
-					  Send_CAN_Request(REG_MOTOR_STATUS_SPEED);
+					  	  case 0:
+					  		  Send_CAN_Request(REG_MOTOR_STATUS_POWER_METER);
+							  l++;
+						  break;
 
-					  k++;
-				  break;
+					  	  case 1:
+					  		Send_CAN_Request(REG_MOTOR_STATUS_TEMPERATURE);
+							  l++;
+						  break;
 
-				  case 5:
+						  case 2:
+							  Send_CAN_Request(REG_MOTOR_STATUS_SPEED);
+							  l++;
+						  break;
 
-					  Send_CAN_Request(REG_MOTOR_STATUS_TEMPERATURE);
+						  case 3:
+							  Send_CAN_Request(REG_MOTOR_STATUS_POWER_VOLTAGE_HI);
+							  l++;
+						  break;
 
-					  k++;
-				  break;
+						  case 4:
+							  Send_CAN_Request(REG_MOTOR_STATUS_POWER_VOLTAGE_LO);
+							  l=0;
+						  break;
 
-				  case 6:
-
-					  Send_CAN_Request(REG_MOTOR_STATUS_POWER_METER);
+					  }//end switch of slow CAN_TX
 
 					  k=0;
 				  break;
 
-				  }//end switch
+				  }//end switch of fast CAN_TX
 			  }//end TX_Flag
 
 		  }//end slow loop
@@ -421,14 +438,14 @@ int main(void)
 
 		  case REG_MOTOR_TORQUE_GAUGE_VOLTAGE_HI:
 
-			  ch_GaugeVolatage_Hi=RxData[3];
+			  ch_GaugeVoltage_Hi=RxData[3];
 
 
 			  break;
 
 		  case REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO:
 
-			  ch_GaugeVolatage_Lo=RxData[3];
+			  ch_GaugeVoltage_Lo=RxData[3];
 
 
 			  break;
@@ -438,6 +455,20 @@ int main(void)
 			  MS.MotorTemperature=RxData[3];
 
 			  break;
+
+		  case REG_MOTOR_STATUS_POWER_VOLTAGE_HI:
+
+			  ch_BatteryVoltage_Hi=RxData[3];
+
+			  break;
+
+		  case REG_MOTOR_STATUS_POWER_VOLTAGE_LO:
+
+			  ch_BatteryVoltage_Lo=RxData[3];
+
+			  break;
+
+
 
 		  }
 
@@ -449,7 +480,7 @@ int main(void)
 
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, " %d, %ld, %d, %d, %d, %d, %d, %d, %d, %d, %d \r\n", i8_Throttle, i32_Gauge_Torque_cumulated, MS.Power, MS.Speed, (int16_t)(ch_GaugeVolatage_Hi<<8)|ch_GaugeVolatage_Lo, i16_Gauge_Torque, i16_Current_Target ,adcData[0], adcData[1], adcData[2], adcData[3]);
+			  sprintf(UART_TX_Buffer, " %d, %ld, %d, %d, %d, %d, %d, %d, %d, %d, %d \r\n", i8_Throttle, i32_Gauge_Torque_cumulated, MS.Power, MS.Speed, (int16_t)(ch_GaugeVoltage_Hi<<8)|ch_GaugeVoltage_Lo, i16_Gauge_Torque, i16_Current_Target ,adcData[0], adcData[1], adcData[2], adcData[3]);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}

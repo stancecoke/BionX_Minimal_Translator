@@ -72,7 +72,7 @@ void display_update(MotorState_t* MS_U)
 
 
   // calc battery pack state of charge (SOC)
-  ui32_battery_volts =  (MS_U->Voltage*CAL_BAT_V*256)/10000;  //hier noch die richtige Kalibrierung einbauen (*256 für bessere Auflösung)
+  ui32_battery_volts =  (MS_U->Voltage<<8)/1000;  //Spannung kommt in mV vom Motor (*256 für bessere Auflösung)
   if (ui32_battery_volts > ((uint16_t) BATTERY_PACK_VOLTS_80)) { ui8_battery_soc = 16; } // 4 bars | full
   else if (ui32_battery_volts > ((uint16_t) BATTERY_PACK_VOLTS_60)) { ui8_battery_soc = 12; } // 3 bars
   else if (ui32_battery_volts > ((uint16_t) BATTERY_PACK_VOLTS_40)) { ui8_battery_soc = 8; } // 2 bars
