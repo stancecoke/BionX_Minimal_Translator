@@ -350,7 +350,7 @@ int main(void)
 
 					  k++;
 				  break;
-
+/*
 				  case 2:
 
 					  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO); //REG_MOTOR_STATUS_SPEED
@@ -364,9 +364,9 @@ int main(void)
 
 					  k++;
 				  break;
-
+*/
 //slow CAN_TX
-				  case 4:
+				  case 2:
 					  switch (l) {
 
 					  	  case 0:
