@@ -88,7 +88,8 @@ void display_update(MotorState_t* MS_U)
   else if (ui32_battery_volts > ((uint16_t) BATTERY_PACK_VOLTS_20)) { ui8_battery_soc = 4; } // 1 bar
   else { ui8_battery_soc = 3; } // empty
 
-  ui16_wheel_period_ms = 6600/MS_U->Speed; //(1000*60/9,091)/value of REG_MOTOR_STATUS_SPEED.
+  if(MS_U->Speed>0)ui16_wheel_period_ms = 6600/MS_U->Speed; //(1000*60/9,091)/value of REG_MOTOR_STATUS_SPEED.
+  else ui16_wheel_period_ms = 13200;
 
 ui8_tx_buffer [0] = 65;
   // B1: battery level
