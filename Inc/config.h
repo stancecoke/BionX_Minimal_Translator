@@ -27,5 +27,5 @@
 
 
 //Select display
-#define DISPLAY_TYPE DISPLAY_TYPE_KUNTENG
+#define DISPLAY_TYPE DISPLAY_TYPE_DEBUG
 #endif /* CONFIG_H_ */

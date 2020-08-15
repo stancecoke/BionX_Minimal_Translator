@@ -75,7 +75,7 @@ char ch_GaugeVoltage_Lo=0;
 char ch_GaugeVoltage_Hi=0;
 char ch_BatteryVoltage_Lo=0;
 char ch_BatteryVoltage_Hi=0;
-uint8_t Gauge_Offset_Flag=0;
+
 int8_t i8_Throttle=0; //must be scaled to valid values from -64 ... +64
 int16_t i16_Gauge_Torque=0;
 uint16_t ui16_Ext_Torque=0;
@@ -197,7 +197,7 @@ int main(void)
 
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
-
+		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;
@@ -307,7 +307,7 @@ int main(void)
 
 				 // Send next CAN_TX if last CAN transmit is finished
 			  if(CAN_TX_Flag){
-				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+
 				  CAN_TX_Flag=0;
 
 				  switch (k) {
@@ -488,7 +488,7 @@ int main(void)
 			  UART_TX_Flag=0;
 			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 		  	  }
-		  else if(RxData[1]==UART_RX_Buffer[1]){
+		  else {
 
 			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
 
@@ -500,8 +500,6 @@ int main(void)
 			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 		  }
 
-
-			  if(!Gauge_Offset_Flag){UART_RX_Buffer[0]=0;}
 
 			  }
 #endif
