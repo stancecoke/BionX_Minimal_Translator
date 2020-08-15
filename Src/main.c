@@ -58,7 +58,7 @@ DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
 
 /* USER CODE BEGIN PV */
-char UART_TX_Buffer[100];
+char UART_TX_Buffer[500];
 char UART_RX_Buffer[100];
 uint8_t i=0; //counter for loops
 uint8_t j=0; //counter for autozero at startup
@@ -79,7 +79,8 @@ uint16_t ui16_slow_loop_counter=0;
 volatile uint16_t adcData[3]; //Buffer for ADC1 Input
 MotorState_t MS; //struct for motor state
 
-
+uint8_t               CAN_Buffer[7][2];
+uint8_t               Buffer_Counter=0;
 
 CAN_TxHeaderTypeDef   TxHeader;
 CAN_RxHeaderTypeDef   RxHeader;
@@ -280,8 +281,7 @@ int main(void)
 
 			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 		  	  }
-		  else{
-
+		  else if(RxData[1]==9){
 			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
 
 			  i=0;
@@ -291,10 +291,68 @@ int main(void)
 
 			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
 		  }
+		  else {
+			  switch (Buffer_Counter) {
+
+			  		  case 0:
+			  			CAN_Buffer[0][Buffer_Counter]=RxHeader.StdId;
+			  			CAN_Buffer[1][Buffer_Counter]=RxHeader.IDE;
+			  			CAN_Buffer[2][Buffer_Counter]=RxHeader.DLC;
+			  			CAN_Buffer[3][Buffer_Counter]=RxData[0];
+			  			CAN_Buffer[4][Buffer_Counter]=RxData[1];
+			  			CAN_Buffer[5][Buffer_Counter]=RxData[2];
+			  			CAN_Buffer[6][Buffer_Counter]=RxData[3];
+			  			Buffer_Counter = 1;
+			  			UART_TX_Flag =1;
+			  		  break;
+
+			  		  case 1:
+			  			CAN_Buffer[0][Buffer_Counter]=RxHeader.StdId;
+			  			CAN_Buffer[1][Buffer_Counter]=RxHeader.IDE;
+			  			CAN_Buffer[2][Buffer_Counter]=RxHeader.DLC;
+			  			CAN_Buffer[3][Buffer_Counter]=RxData[0];
+			  			CAN_Buffer[4][Buffer_Counter]=RxData[1];
+			  			CAN_Buffer[5][Buffer_Counter]=RxData[2];
+			  			CAN_Buffer[6][Buffer_Counter]=RxData[3];
+			  			Buffer_Counter = 0;
+
+
+
+
+
+			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d,\r\n%d, %d, %d, %d, %d, %d, %d\r\n",
+					  CAN_Buffer[0][0],
+					  CAN_Buffer[1][0],
+					  CAN_Buffer[2][0],
+					  CAN_Buffer[3][0],
+					  CAN_Buffer[4][0],
+					  CAN_Buffer[5][0],
+					  CAN_Buffer[6][0],
+					  CAN_Buffer[0][1],
+					  CAN_Buffer[1][1],
+					  CAN_Buffer[2][1],
+					  CAN_Buffer[3][1],
+					  CAN_Buffer[4][1],
+					  CAN_Buffer[5][1],
+					  CAN_Buffer[6][1]);
+
+
+			    i=0;
+			  while (UART_TX_Buffer[i] != '\0')
+			  {i++;}
+
+
+			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+			  break;
+			  }//end switch Buffer_Counter
+/*
+
+			  */
+		  } //end else
 #endif
 
 
-			  }
+			  }//End if UART Tx
 		  }//End CAN Rx
 
 
