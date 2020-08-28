@@ -173,7 +173,7 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-  UART_RX_Buffer[0]=2;
+  UART_RX_Buffer[0]=0;
   while(!CAN_RX_Flag){ //So lange Versionsanfrage senden, bis Antwort vom BionX-Controller kommt, dabei blinken.
   	  HAL_Delay(200);
   	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
@@ -480,7 +480,7 @@ int main(void)
 
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, " %d, %ld, %d, %d, %d, %d, %d, %d, %d, %d, %d \r\n", i8_Throttle, i32_Gauge_Torque_cumulated, MS.Power, MS.Speed, (int16_t)(ch_GaugeVoltage_Hi<<8)|ch_GaugeVoltage_Lo, i16_Gauge_Torque, i16_Current_Target ,adcData[0], adcData[1], adcData[2], adcData[3]);
+			  sprintf(UART_TX_Buffer, " %d, %ld, %d, %d, %d, %d, %d, %d, %d, %d, %d \r\n", MS.MotorTemperature, i32_Gauge_Torque_cumulated, MS.Power, MS.Speed, (uint16_t) MS.Voltage, i16_Gauge_Torque, i16_Current_Target ,adcData[0], adcData[1], adcData[2], adcData[3]);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
