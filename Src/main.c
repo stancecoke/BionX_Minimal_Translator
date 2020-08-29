@@ -79,7 +79,7 @@ char ch_BatteryVoltage_Hi=0;
 int8_t i8_Throttle=0; //must be scaled to valid values from -64 ... +64
 int16_t i16_Gauge_Torque=0;
 uint16_t ui16_Ext_Torque=0;
-uint32_t ui16_Ext_Torque_Cumulated=0;
+uint32_t ui32_Ext_Torque_Cumulated=0;
 int16_t i16_PAS_Counter=0;
 int16_t i16_PAS_Duration=0;
 int32_t i32_Gauge_Torque_cumulated=0;
@@ -174,12 +174,16 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   UART_RX_Buffer[0]=0;
+
+
   while(!CAN_RX_Flag){ //So lange Versionsanfrage senden, bis Antwort vom BionX-Controller kommt, dabei blinken.
   	  HAL_Delay(200);
   	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		Send_CAN_Request(REG_MOTOR_REV_SW);
 		  }
   HAL_Delay(200);
+
+
 
   MS.Gauge_Ext_Torq_Flag=0; //set torque source to external BB-sensor by default. Is overwritten by KT-LCD setting of P3 at runtime.
   MS.Assist_Level=3;		//set Assistlevel to 3 as default value
@@ -197,7 +201,7 @@ int main(void)
 
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
-		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;
@@ -252,11 +256,13 @@ int main(void)
 
 		  //process PAS signal
 		  if (PAS_Flag){
+			  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+			  PAS_Flag=0;
 			  i16_PAS_Duration=i16_PAS_Counter;
 			  i16_PAS_Counter=0;
 			  ui16_Ext_Torque=map(adcData[1],EXT_TORQUE_MIN, EXT_TORQUE_MAX, 0, 1024); //map throttle ADC-value to valid LEVEL range
-			  ui16_Ext_Torque_Cumulated-=ui16_Ext_Torque_Cumulated>>FILTER;
-			  ui16_Ext_Torque_Cumulated+=ui16_Ext_Torque;
+			  ui32_Ext_Torque_Cumulated-=ui32_Ext_Torque_Cumulated>>FILTER;
+			  ui32_Ext_Torque_Cumulated+=ui16_Ext_Torque;
 
 		  }
 
@@ -278,7 +284,7 @@ int main(void)
 			  else if(MS.Gauge_Ext_Torq_Flag)i16_Current_Target = (CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
 			  // if external torque sensor is active
 			  else {
-				  i16_Current_Target=CALIB_EXT_TORQUE*(ui16_Ext_Torque_Cumulated>>FILTER)/i16_PAS_Duration;
+				  i16_Current_Target=CALIB_EXT_TORQUE*(ui32_Ext_Torque_Cumulated>>FILTER)/i16_PAS_Duration;
 				  if(i16_PAS_Counter>PAS_TIMEOUT-1)i16_Current_Target=0; //Switch off power, if pedals are not turning
 			  }
 
@@ -336,6 +342,7 @@ int main(void)
 				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 					  if(!UART_RX_Buffer[0]){
+						  i16_Current_Target=0;
 						  Send_CAN_Command(REG_MOTOR_ASSIST_LEVEL,i16_Current_Target);
 					  }
 					  else{
@@ -480,7 +487,7 @@ int main(void)
 
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, " %d, %ld, %d, %d, %d, %d, %d, %d, %d, %d, %d \r\n", MS.MotorTemperature, i32_Gauge_Torque_cumulated, MS.Power, MS.Speed, (uint16_t) MS.Voltage, i16_Gauge_Torque, i16_Current_Target ,adcData[0], adcData[1], adcData[2], adcData[3]);
+			  sprintf(UART_TX_Buffer, "%d, %ld, %d, %d, %ld, %d, %d, %d, %d, %d, %d \r\n", MS.MotorTemperature, ui32_Ext_Torque_Cumulated, MS.Power, MS.Speed, MS.Voltage, i16_PAS_Duration, i16_Current_Target, adcData[0], adcData[1], adcData[2], adcData[3]);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
@@ -925,7 +932,8 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	PAS_Flag=0;
+	PAS_Flag=1;
+
 }
 
 void Send_CAN_Request(uint8_t command){
