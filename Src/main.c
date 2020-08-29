@@ -284,8 +284,13 @@ int main(void)
 			  else if(MS.Gauge_Ext_Torq_Flag)i16_Current_Target = (CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
 			  // if external torque sensor is active
 			  else {
-				  i16_Current_Target=CALIB_EXT_TORQUE*(ui32_Ext_Torque_Cumulated>>FILTER)/i16_PAS_Duration;
-				  if(i16_PAS_Counter>PAS_TIMEOUT-1)i16_Current_Target=0; //Switch off power, if pedals are not turning
+				  i16_Current_Target = (CALIB_EXT_TORQUE*(ui32_Ext_Torque_Cumulated>>FILTER))/(i16_PAS_Duration*(MS.Speed+1));
+				  if(i16_PAS_Counter>PAS_TIMEOUT-1){
+					  i16_Current_Target=0; //Switch off power, if pedals are not turning
+					  if(ui32_Ext_Torque_Cumulated>0)ui32_Ext_Torque_Cumulated--;
+					  if(i16_PAS_Duration<PAS_TIMEOUT)i16_PAS_Duration++;
+
+				  }
 			  }
 
 			  // limit Current_Target to valid range for LEVEL
