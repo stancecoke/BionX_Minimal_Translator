@@ -23,8 +23,10 @@ typedef struct _lcd_configuration_variables
   uint8_t ui8_power_assist_control_mode;
   uint8_t ui8_controller_max_current;
   uint8_t ui8_C1;
+  uint8_t ui8_C2;
   uint8_t ui8_P2;
   uint8_t ui8_P3;
+  uint8_t ui8_P4;
 } struc_lcd_configuration_variables;
 
 #define COMMUNICATIONS_BATTERY_VOLTAGE	(BATTERY_LI_ION_CELLS_NUMBER * 3.45) // example: 7S battery, should be = 24

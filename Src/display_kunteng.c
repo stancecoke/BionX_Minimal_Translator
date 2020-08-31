@@ -27,8 +27,10 @@ uint8_t ui8_InitFlag=0;
 uint8_t ui8_Initial_Max_Speed=0;
 uint8_t ui8_Initial_Wheel_Size=0;
 uint8_t ui8_Initial_Number_of_cells=0;
+uint8_t ui8_Initial_Battery_Current_Max=0;
 uint16_t ui16_wheel_circumference = 2200;
 uint8_t ui8_Number_of_Cells[6]={10,13,0,0,0,0};
+uint16_t ui16_Battery_Current_Max[8]={10000,12000,14000,16000,18000,20000,25000,30000};
 uint16_t BATTERY_PACK_VOLTS_100;
 uint16_t BATTERY_PACK_VOLTS_80;
 uint16_t BATTERY_PACK_VOLTS_60;
@@ -171,12 +173,15 @@ void check_message(MotorState_t* MS_D)
      lcd_configuration_variables.ui8_power_assist_control_mode = ui8_rx_buffer [4] & 8;
      lcd_configuration_variables.ui8_P2 = ui8_rx_buffer [4] & 0x07;
      lcd_configuration_variables.ui8_P3 = ui8_rx_buffer [4]>>3 & 1;
+     lcd_configuration_variables.ui8_P4 = ui8_rx_buffer [4]>>4 & 1;
      lcd_configuration_variables.ui8_controller_max_current = (ui8_rx_buffer [7] & 15); //unterste 4 Bits nach https://endless-sphere.com/forums/download/file.php?id=197184
      lcd_configuration_variables.ui8_C1 = ((ui8_rx_buffer [6]>>3) & 7); //Bit 3,4,5
+     lcd_configuration_variables.ui8_C2 = ((ui8_rx_buffer [6]) & 7); //Bit 0,1,2
      MS_D->Assist_Level=lcd_configuration_variables.ui8_assist_level;
      MS_D->Gauge_Factor=lcd_configuration_variables.ui8_motor_characteristic;
      MS_D->Regen_Factor=lcd_configuration_variables.ui8_C1;
      MS_D->Gauge_Ext_Torq_Flag=lcd_configuration_variables.ui8_P3;
+     MS_D->Throttle_Function=lcd_configuration_variables.ui8_P4;
      if(lcd_configuration_variables.ui8_light){
     	HAL_GPIO_WritePin(Light_GPIO_Port, Light_Pin, GPIO_PIN_SET);
      }
@@ -189,6 +194,7 @@ void check_message(MotorState_t* MS_D)
     	ui8_Initial_Max_Speed = lcd_configuration_variables.ui8_max_speed;
     	ui8_Initial_Wheel_Size = lcd_configuration_variables.ui8_wheel_size;
     	ui8_Initial_Number_of_cells = lcd_configuration_variables.ui8_P2;
+    	ui8_Initial_Battery_Current_Max = lcd_configuration_variables.ui8_C2;
     	ui16_wheel_circumference = GetWheelCircumference(lcd_configuration_variables.ui8_wheel_size);
     	SetVoltagePercentage(lcd_configuration_variables.ui8_P2);
     	ui8_InitFlag=1;
@@ -205,6 +211,12 @@ void check_message(MotorState_t* MS_D)
     		 Send_CAN_Command(REG_MOTOR_GEOMETRY_CIRC_HI, (ui16_wheel_circumference>>8));
     		 Send_CAN_Command(REG_MOTOR_GEOMETRY_CIRC_LO, (ui16_wheel_circumference & 0xFF));
     		 ui8_Initial_Wheel_Size = lcd_configuration_variables.ui8_wheel_size;
+    	 }
+    	 if(ui8_Initial_Battery_Current_Max != lcd_configuration_variables.ui8_C2){
+    		 Send_CAN_Command(REG_MOTOR_PROTECT_UNLOCK , MOTOR_PROTECT_UNLOCK_KEY);
+    		 Send_CAN_Command(REG_MOTOR_CONFIG_MAX_DISCHARGE_HI, (ui16_Battery_Current_Max[lcd_configuration_variables.ui8_C2]>>8));
+    		 Send_CAN_Command(REG_MOTOR_CONFIG_MAX_DISCHARGE_LO, (ui16_Battery_Current_Max[lcd_configuration_variables.ui8_C2] & 0xFF));
+    		 ui8_Initial_Battery_Current_Max = lcd_configuration_variables.ui8_C2;
     	 }
     	 if(ui8_Initial_Number_of_cells != lcd_configuration_variables.ui8_P2){
     		 SetVoltagePercentage(lcd_configuration_variables.ui8_P2);

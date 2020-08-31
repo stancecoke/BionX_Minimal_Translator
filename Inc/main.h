@@ -93,6 +93,7 @@ typedef struct
 	uint16_t        Power;
 	uint32_t        Gauge_Factor;
 	uint8_t         Brake;
+	uint8_t         Throttle_Function;
 	uint8_t         Perma_Regen;
 	uint8_t         Regen_Factor;
 	uint32_t        Battery_Current;
