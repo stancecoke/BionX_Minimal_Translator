@@ -81,7 +81,7 @@ int16_t i16_Gauge_Torque=0;
 uint16_t ui16_Ext_Torque=0;
 uint32_t ui32_Ext_Torque_Cumulated=0;
 int16_t i16_PAS_Counter=0;
-int16_t i16_PAS_Duration=0;
+int16_t i16_PAS_Duration=PAS_TIMEOUT;
 int32_t i32_Gauge_Torque_cumulated=0;
 int16_t i16_Current_Target=0;
 uint16_t ui16_slow_loop_counter=0;
@@ -185,9 +185,10 @@ int main(void)
 
 
 
-  MS.Gauge_Ext_Torq_Flag=0; //set torque source to external BB-sensor by default. Is overwritten by KT-LCD setting of P3 at runtime.
-  MS.Assist_Level=3;		//set Assistlevel to 3 as default value
-
+  MS.Gauge_Ext_Torq_Flag = 0; //set torque source to external BB-sensor by default. Is overwritten by KT-LCD setting of P3 at runtime.
+  MS.Assist_Level = 3;		//set Assistlevel to 3 as default value
+  MS.Gauge_Factor = 127;		//default for global gain for torque measurement, set by Kunteng Paramter P1 0 ... 255
+  MS.Regen_Factor = 4;		// default regen strenght for brake lever regen
 
 
   /* USER CODE END 2 */
@@ -284,8 +285,13 @@ int main(void)
 			  else if(MS.Gauge_Ext_Torq_Flag)i16_Current_Target = (CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
 			  // if external torque sensor is active
 			  else {
-				  i16_Current_Target=CALIB_EXT_TORQUE*(ui32_Ext_Torque_Cumulated>>FILTER)/i16_PAS_Duration;
-				  if(i16_PAS_Counter>PAS_TIMEOUT-1)i16_Current_Target=0; //Switch off power, if pedals are not turning
+				  i16_Current_Target = (((ui32_Ext_Torque_Cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>CALIB_EXT_TORQUE)/(i16_PAS_Duration*(MS.Speed+1));
+				  if(i16_PAS_Counter>PAS_TIMEOUT-1){
+					  i16_Current_Target=0; //Switch off power, if pedals are not turning
+					  if(ui32_Ext_Torque_Cumulated>0)ui32_Ext_Torque_Cumulated--;
+					  if(i16_PAS_Duration<PAS_TIMEOUT)i16_PAS_Duration++;
+
+				  }
 			  }
 
 			  // limit Current_Target to valid range for LEVEL
@@ -348,7 +354,7 @@ int main(void)
 				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 					  if(!UART_RX_Buffer[0]){
-						  i16_Current_Target=0;
+						  //i16_Current_Target=0;
 						  Send_CAN_Command(REG_MOTOR_ASSIST_LEVEL,i16_Current_Target);
 					  }
 					  else{
