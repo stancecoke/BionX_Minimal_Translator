@@ -78,6 +78,7 @@ char ch_BatteryVoltage_Hi=0;
 
 int8_t i8_Throttle=0; //must be scaled to valid values from -64 ... +64
 int16_t i16_Gauge_Torque=0;
+int16_t i16_Gauge_Voltage=0;
 uint16_t ui16_Ext_Torque=0;
 uint32_t ui32_Ext_Torque_Cumulated=0;
 int16_t i16_PAS_Counter=0;
@@ -240,6 +241,7 @@ int main(void)
 		  if (i16_PAS_Counter<PAS_TIMEOUT)i16_PAS_Counter++;
 
 		  MS.Voltage=ch_BatteryVoltage_Hi<<8|ch_BatteryVoltage_Hi; //Battery Voltage in mV
+		  i16_Gauge_Voltage=ch_GaugeVoltage_Hi<<8|ch_GaugeVoltage_Lo;
 
 		  //Bremseingang abfragen
 		  MS.Brake=HAL_GPIO_ReadPin(Brake_GPIO_Port, Brake_Pin);
@@ -369,21 +371,9 @@ int main(void)
 
 					  k++;
 				  break;
-/*
-				  case 2:
 
-					  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO); //REG_MOTOR_STATUS_SPEED
 
-					  k++;
-				  break;
 
-				  case 3:
-
-					  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_HI); //REG_MOTOR_STATUS_POWER_METER
-
-					  k++;
-				  break;
-*/
 //slow CAN_TX
 				  case 2:
 					  switch (l) {
@@ -409,6 +399,16 @@ int main(void)
 						  break;
 
 						  case 4:
+							  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO);
+							  l++;
+						  break;
+
+						  case 5:
+							  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_HI);
+							  l++;
+						  break;
+
+						  case 6:
 							  Send_CAN_Request(REG_MOTOR_STATUS_POWER_VOLTAGE_LO);
 							  l=0;
 						  break;
@@ -499,7 +499,7 @@ int main(void)
 
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, "%d, %ld, %d, %d, %ld, %d, %d, %d, %d, %d, %d \r\n", MS.MotorTemperature, ui32_Ext_Torque_Cumulated, MS.Power, MS.Speed, MS.Voltage, i16_PAS_Duration, i16_Current_Target, adcData[0], adcData[1], adcData[2], adcData[3]);
+			  sprintf(UART_TX_Buffer, "%d, %ld, %d, %d, %ld, %d, %d, %d, %d, %d, %d \r\n", i16_Gauge_Voltage, ui32_Ext_Torque_Cumulated, MS.Power, MS.Speed, MS.Voltage, i16_PAS_Duration, i16_Current_Target, adcData[0], adcData[1], adcData[2], adcData[3]);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
