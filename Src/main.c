@@ -186,11 +186,11 @@ int main(void)
 
 
 
-  MS.Gauge_Ext_Torq_Flag = 0; //set torque source to external BB-sensor by default. Is overwritten by KT-LCD setting of P3 at runtime.
-  MS.Assist_Level = 3;		//set Assistlevel to 3 as default value
+  MS.Gauge_Ext_Torq_Flag = 0; 	//set torque source to external BB-sensor by default. Is overwritten by KT-LCD setting of P3 at runtime.
+  MS.Assist_Level = 3;			//set Assistlevel to 3 as default value
   MS.Gauge_Factor = 127;		//default for global gain for torque measurement, set by Kunteng Paramter P1 0 ... 255
-  MS.Regen_Factor = 4;		// default regen strenght for brake lever regen
-
+  MS.Regen_Factor = 4;			//default regen strenght for brake lever regen
+  MS.Throttle_Function = 0; 	//Throttle override for power and regen
 
   /* USER CODE END 2 */
 
