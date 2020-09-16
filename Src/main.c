@@ -191,6 +191,7 @@ int main(void)
   MS.Gauge_Factor = 127;		//default for global gain for torque measurement, set by Kunteng Paramter P1 0 ... 255
   MS.Regen_Factor = 4;			//default regen strenght for brake lever regen
   MS.Throttle_Function = 0; 	//Throttle override for power and regen
+  MS.Min_Voltage = 33000;		//minimum Voltage (mV) for 10s pack as default
 
   /* USER CODE END 2 */
 
@@ -356,8 +357,8 @@ int main(void)
 				  // send current target to BionX controller, perhaps 2 times, perhaps wait for CAN TX ready.
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 					  if(!UART_RX_Buffer[0]){
-						  //i16_Current_Target=0;
-						  Send_CAN_Command(REG_MOTOR_ASSIST_LEVEL,i16_Current_Target);
+						if(MS.Voltage>MS.Min_Voltage) Send_CAN_Command(REG_MOTOR_ASSIST_LEVEL,i16_Current_Target); //send current target only when battery voltage is high enough
+						else CAN_TX_Flag = 1;
 					  }
 					  else{
 						  Send_CAN_Request(REG_MOTOR_STATUS_TEMPERATURE);
@@ -365,7 +366,8 @@ int main(void)
 #endif
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KUNTENG)
 
-					  Send_CAN_Command(REG_MOTOR_ASSIST_LEVEL,i16_Current_Target);
+					  if(MS.Voltage>MS.Min_Voltage) Send_CAN_Command(REG_MOTOR_ASSIST_LEVEL,i16_Current_Target); //send current target only when battery voltage is high enough
+					  else CAN_TX_Flag = 1;
 
 #endif
 

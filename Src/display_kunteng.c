@@ -197,6 +197,7 @@ void check_message(MotorState_t* MS_D)
     	ui8_Initial_Battery_Current_Max = lcd_configuration_variables.ui8_C2;
     	ui16_wheel_circumference = GetWheelCircumference(lcd_configuration_variables.ui8_wheel_size);
     	SetVoltagePercentage(lcd_configuration_variables.ui8_P2);
+    	MS_D->Min_Voltage=ui8_Number_of_Cells[ui8_Initial_Number_of_cells]*3300; //min Voltage per cell 3.3V = 3300 mV
     	ui8_InitFlag=1;
      }
      else{
@@ -221,6 +222,7 @@ void check_message(MotorState_t* MS_D)
     	 if(ui8_Initial_Number_of_cells != lcd_configuration_variables.ui8_P2){
     		 SetVoltagePercentage(lcd_configuration_variables.ui8_P2);
     		 ui8_Initial_Number_of_cells = lcd_configuration_variables.ui8_P2;
+    		 MS_D->Min_Voltage=ui8_Number_of_Cells[ui8_Initial_Number_of_cells]*3300; //min Voltage per cell 3.3V = 3300 mV
     	 }
 
      }
