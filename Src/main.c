@@ -192,6 +192,7 @@ int main(void)
   MS.Regen_Factor = 4;			//default regen strenght for brake lever regen
   MS.Throttle_Function = 0; 	//Throttle override for power and regen
   MS.Min_Voltage = 33000;		//minimum Voltage (mV) for 10s pack as default
+  MS.Max_Voltage = 41000;		//maximum Voltage (mV) for 10s pack as default
 
   /* USER CODE END 2 */
 
@@ -310,7 +311,7 @@ int main(void)
 				  if(i8_Throttle>2)i16_Current_Target = -i8_Throttle;
 			  }
 
-
+			  if (i16_Current_Target<0)i16_Current_Target= -map(MS.Voltage,MS.Max_Voltage-2000,MS.Max_Voltage,-i16_Current_Target,0);
 
 			 /* if (ADC_Flag){
 				  ADC_Flag=0;
