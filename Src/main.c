@@ -108,6 +108,7 @@ static void MX_TIM3_Init(void);
 
 
 int32_t map (int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
+int16_t PI_control (int16_t ist, int16_t soll, int16_t max);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -191,8 +192,8 @@ int main(void)
   MS.Gauge_Factor = 127;		//default for global gain for torque measurement, set by Kunteng Paramter P1 0 ... 255
   MS.Regen_Factor = 4;			//default regen strenght for brake lever regen
   MS.Throttle_Function = 0; 	//Throttle override for power and regen
-  MS.Min_Voltage = 33000;		//minimum Voltage (mV) for 10s pack as default
-  MS.Max_Voltage = 41000;		//maximum Voltage (mV) for 10s pack as default
+  MS.Min_Voltage = 20000;		//minimum Voltage (mV) for 10s pack as default
+  MS.Max_Voltage = 40000;		//maximum Voltage (mV) for 10s pack as default
 
   /* USER CODE END 2 */
 
@@ -249,7 +250,7 @@ int main(void)
 		  MS.Brake=HAL_GPIO_ReadPin(Brake_GPIO_Port, Brake_Pin);
 		  // hier ggf. noch entprellen?
 		  if(MS.Brake==0 && Brake_Flag_Old==1){
-
+			  PI_control (MS.Voltage, MS.Max_Voltage, 0); //reset integral part of PI control, if brake lever is released
 			  if(MS.Assist_Level==0){ //Toggle
 				  if(MS.Perma_Regen)MS.Perma_Regen=0;
 				  else MS.Perma_Regen=1;
@@ -311,8 +312,10 @@ int main(void)
 				  if(i8_Throttle>2)i16_Current_Target = -i8_Throttle;
 			  }
 
-			  if (i16_Current_Target<0)i16_Current_Target= -map(MS.Voltage,MS.Max_Voltage-2000,MS.Max_Voltage,-i16_Current_Target,0);
-
+		//	  if (i16_Current_Target<0) i16_Current_Target= -map(MS.Voltage,MS.Max_Voltage-2000,MS.Max_Voltage,-i16_Current_Target,0);
+			  if (i16_Current_Target<0) {
+				  i16_Current_Target = PI_control (MS.Voltage, MS.Max_Voltage, i16_Current_Target);
+			  }
 			 /* if (ADC_Flag){
 				  ADC_Flag=0;
 				  sprintf(UART_TX_Buffer, "ADC Values %d, %d, %d\r\n",adcData[0], adcData[1], adcData[2]);
@@ -402,19 +405,21 @@ int main(void)
 						  break;
 
 						  case 4:
+							  Send_CAN_Request(REG_MOTOR_STATUS_POWER_VOLTAGE_LO);
+							  l=0;
+						  break;
+/*
+						  case 5:
 							  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO);
 							  l++;
 						  break;
 
-						  case 5:
+						  case 6:
 							  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_HI);
 							  l++;
 						  break;
+*/
 
-						  case 6:
-							  Send_CAN_Request(REG_MOTOR_STATUS_POWER_VOLTAGE_LO);
-							  l=0;
-						  break;
 
 					  }//end switch of slow CAN_TX
 
@@ -502,7 +507,7 @@ int main(void)
 
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, "%d, %ld, %d, %d, %ld, %d, %d, %d, %d, %d, %d \r\n", i16_Gauge_Voltage, ui32_Ext_Torque_Cumulated, MS.Power, MS.Speed, MS.Voltage, i16_PAS_Duration, i16_Current_Target, adcData[0], adcData[1], adcData[2], adcData[3]);
+			  sprintf(UART_TX_Buffer, "%d, %ld, %d, %d, %ld, %d, %d, %d, %d, %d, %d \r\n", MS.MotorTemperature, ui32_Ext_Torque_Cumulated, MS.Power, MS.Speed, MS.Voltage, i16_PAS_Duration, i16_Current_Target, adcData[0], adcData[1], adcData[2], adcData[3]);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
@@ -1001,6 +1006,25 @@ int32_t map (int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t
   // round down if mapping smaller ranges to bigger ranges
   else
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+//PI control for smooth cut off of regen power with full battery
+int16_t PI_control (int16_t ist, int16_t soll, int16_t max)
+{
+
+	float flt_p; //proportional part
+	static float flt_i = 0; 			//integral part
+	if(max == 0)flt_i=0; 				//reset integral part, if brake lever is released
+	static float flt_pplusi = 0; 		// sum of proportional and integral part
+	flt_p = (soll - ist)*P_FACTOR;
+	flt_i += ((float)(soll - ist))*I_FACTOR;
+	if(flt_i>63) flt_i=63;
+	if(flt_i<-10) flt_i=-10;
+	flt_pplusi = flt_p + flt_i;
+	if(flt_pplusi >- max) flt_pplusi=-max;
+	if(flt_pplusi < 0 ) flt_pplusi=0;
+
+	return (-flt_pplusi);
 }
 
 

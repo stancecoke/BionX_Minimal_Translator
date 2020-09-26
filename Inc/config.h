@@ -25,6 +25,8 @@
 #define DISPLAY_TYPE_KUNTENG (1<<1)							// For use with Kunteng LCD Displays
 #define DISPLAY_TYPE_DEBUG (1<<0)							// For ASCII-Output in Debug mode);
 
+#define P_FACTOR 0.001
+#define I_FACTOR 0.0001
 
 //Select display
 #define DISPLAY_TYPE DISPLAY_TYPE_DEBUG
