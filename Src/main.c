@@ -193,7 +193,7 @@ int main(void)
   MS.Regen_Factor = 4;			//default regen strenght for brake lever regen
   MS.Throttle_Function = 0; 	//Throttle override for power and regen
   MS.Min_Voltage = 20000;		//minimum Voltage (mV) for 10s pack as default
-  MS.Max_Voltage = 40000;		//maximum Voltage (mV) for 10s pack as default
+  MS.Max_Voltage = 39000;		//maximum Voltage (mV) for 10s pack as default
 
   /* USER CODE END 2 */
 
@@ -341,7 +341,7 @@ int main(void)
 #if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
 					  if(!UART_RX_Buffer[0]){
 
-						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO);
+						  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_VALUE);
 
 					  }
 					  else{
