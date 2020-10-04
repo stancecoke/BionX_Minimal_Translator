@@ -86,6 +86,7 @@ int16_t i16_PAS_Duration=PAS_TIMEOUT;
 int32_t i32_Gauge_Torque_cumulated=0;
 int16_t i16_Current_Target=0;
 uint16_t ui16_slow_loop_counter=0;
+uint16_t ui16_Gauge_Gain;
 volatile uint16_t adcData[4]; //Buffer for ADC1 Input
 MotorState_t MS; //struct for motor state
 
@@ -182,18 +183,23 @@ int main(void)
   	  HAL_Delay(200);
   	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 		Send_CAN_Request(REG_MOTOR_REV_SW);
+
 		  }
   HAL_Delay(200);
 
+  Send_CAN_Command(REG_MOTOR_PROTECT_UNLOCK,MOTOR_PROTECT_UNLOCK_KEY);
+  Send_CAN_Command(REG_MOTOR_TORQUE_GAUGE_GAIN,30); // 30=neuer Gauge_Gain
+  ui16_Gauge_Gain=0;
+  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_GAIN); // Gauge_Gain abfragen, nur zur Kontrolle
+  ui16_Gauge_Gain=RxData[3];
 
-
-  MS.Gauge_Ext_Torq_Flag = 0; 	//set torque source to external BB-sensor by default. Is overwritten by KT-LCD setting of P3 at runtime.
-  MS.Assist_Level = 3;			//set Assistlevel to 3 as default value
+  MS.Gauge_Ext_Torq_Flag = 1; 	//set torque source to external BB-sensor by default. Is overwritten by KT-LCD setting of P3 at runtime.
+  MS.Assist_Level = 1;			//set Assistlevel to 3 as default value
   MS.Gauge_Factor = 127;		//default for global gain for torque measurement, set by Kunteng Paramter P1 0 ... 255
-  MS.Regen_Factor = 4;			//default regen strenght for brake lever regen
+  MS.Regen_Factor = 2;			//default regen strenght for brake lever regen
   MS.Throttle_Function = 0; 	//Throttle override for power and regen
   MS.Min_Voltage = 20000;		//minimum Voltage (mV) for 10s pack as default
-  MS.Max_Voltage = 39000;		//maximum Voltage (mV) for 10s pack as default
+  MS.Max_Voltage = 46000;		//maximum Voltage (mV) for 10s pack as default
 
   /* USER CODE END 2 */
 
@@ -444,7 +450,7 @@ int main(void)
 
 		  case REG_MOTOR_TORQUE_GAUGE_VALUE:
 			  i16_Gauge_Torque=RxData[3];
-			  i32_Gauge_Torque_cumulated -= (i32_Gauge_Torque_cumulated>>FILTER);
+			  i32_Gauge_Torque_cumulated -= (i32_Gauge_Torque_cumulated>>FILTER); // FILTER = 6 für 1s Zeitkonstante
 			  i32_Gauge_Torque_cumulated += i16_Gauge_Torque;
 
 			  break;
@@ -507,7 +513,7 @@ int main(void)
 
 		  if(!UART_RX_Buffer[0]){
 
-			  sprintf(UART_TX_Buffer, "%d, %ld, %d, %d, %ld, %d, %d, %d, %d, %d, %d \r\n", MS.MotorTemperature, ui32_Ext_Torque_Cumulated, MS.Power, MS.Speed, MS.Voltage, i16_PAS_Duration, i16_Current_Target, adcData[0], adcData[1], adcData[2], adcData[3]);
+			  sprintf(UART_TX_Buffer, "%d, %ld, %d, %d, %ld, %d, %d, %d, %d, %d, %d \r\n", MS.MotorTemperature, i32_Gauge_Torque_cumulated, MS.Power, MS.Speed, MS.Voltage, i16_PAS_Duration, i16_Current_Target, i16_Gauge_Torque, ui16_Gauge_Gain, adcData[2], adcData[3]);
 			  i=0;
 			  while (UART_TX_Buffer[i] != '\0')
 			  {i++;}
