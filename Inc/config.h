@@ -11,7 +11,7 @@
 #define CALIB_GAUGE 1	 		// calibration factor for DMS-Torque, better value not known :-)
 #define CALIB_EXT_TORQUE 3	// calibration factor for DMS-Torque, better value not known :-)
 #define CALIB_REGEN 64 			//calibration factor for regen
-#define FILTER 4 				//average from 2^x samples
+
 
 #define THROTTLE_MIN 640
 #define THROTTLE_MAX 3450

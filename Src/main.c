@@ -187,19 +187,14 @@ int main(void)
 		  }
   HAL_Delay(200);
 
-  Send_CAN_Command(REG_MOTOR_PROTECT_UNLOCK,MOTOR_PROTECT_UNLOCK_KEY);
-  Send_CAN_Command(REG_MOTOR_TORQUE_GAUGE_GAIN,30); // 30=neuer Gauge_Gain
-  ui16_Gauge_Gain=0;
-  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_GAIN); // Gauge_Gain abfragen, nur zur Kontrolle
-  ui16_Gauge_Gain=RxData[3];
-
   MS.Gauge_Ext_Torq_Flag = 1; 	//set torque source to external BB-sensor by default. Is overwritten by KT-LCD setting of P3 at runtime.
-  MS.Assist_Level = 1;			//set Assistlevel to 3 as default value
+  MS.Assist_Level = 3;			//set Assistlevel to 3 as default value
   MS.Gauge_Factor = 127;		//default for global gain for torque measurement, set by Kunteng Paramter P1 0 ... 255
-  MS.Regen_Factor = 2;			//default regen strenght for brake lever regen
+  MS.Regen_Factor = 4;			//default regen strenght for brake lever regen
   MS.Throttle_Function = 0; 	//Throttle override for power and regen
-  MS.Min_Voltage = 20000;		//minimum Voltage (mV) for 10s pack as default
-  MS.Max_Voltage = 46000;		//maximum Voltage (mV) for 10s pack as default
+  MS.Min_Voltage = 33000;		//minimum Voltage (mV) for 10s pack as default
+  MS.Max_Voltage = 41500;		//maximum Voltage (mV) for 10s pack as default
+  MS.Filter = 6;				//Filter over 64 readings as default.
 
   /* USER CODE END 2 */
 
@@ -273,7 +268,7 @@ int main(void)
 			  i16_PAS_Duration=i16_PAS_Counter;
 			  i16_PAS_Counter=0;
 			  ui16_Ext_Torque=map(adcData[1],EXT_TORQUE_MIN, EXT_TORQUE_MAX, 0, 1024); //map throttle ADC-value to valid LEVEL range
-			  ui32_Ext_Torque_Cumulated-=ui32_Ext_Torque_Cumulated>>FILTER;
+			  ui32_Ext_Torque_Cumulated-=ui32_Ext_Torque_Cumulated>>MS.Filter;
 			  ui32_Ext_Torque_Cumulated+=ui16_Ext_Torque;
 
 		  }
@@ -293,10 +288,10 @@ int main(void)
 				  if(!MS.Throttle_Function)i8_Throttle=-i8_Throttle;
 			  }
 			  // if internal Gauge is active (selected by P3), calculate current target form Gauge Value,
-			  else if(MS.Gauge_Ext_Torq_Flag)i16_Current_Target = (CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
+			  else if(MS.Gauge_Ext_Torq_Flag)i16_Current_Target = (CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>MS.Filter)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
 			  // if external torque sensor is active
 			  else {
-				  i16_Current_Target = (((ui32_Ext_Torque_Cumulated>>FILTER)*MS.Assist_Level*MS.Gauge_Factor)>>CALIB_EXT_TORQUE)/(i16_PAS_Duration*(MS.Speed+1));
+				  i16_Current_Target = (((ui32_Ext_Torque_Cumulated>>MS.Filter)*MS.Assist_Level*MS.Gauge_Factor)>>CALIB_EXT_TORQUE)/(i16_PAS_Duration*(MS.Speed+1));
 				  if(i16_PAS_Counter>PAS_TIMEOUT-1){
 					  i16_Current_Target=0; //Switch off power, if pedals are not turning
 					  if(ui32_Ext_Torque_Cumulated>0)ui32_Ext_Torque_Cumulated--;
@@ -412,6 +407,11 @@ int main(void)
 
 						  case 4:
 							  Send_CAN_Request(REG_MOTOR_STATUS_POWER_VOLTAGE_LO);
+							  l++;
+						  break;
+
+						  case 5:
+							  Send_CAN_Request(REG_MOTOR_TORQUE_GAUGE_GAIN);
 							  l=0;
 						  break;
 /*
@@ -450,7 +450,7 @@ int main(void)
 
 		  case REG_MOTOR_TORQUE_GAUGE_VALUE:
 			  i16_Gauge_Torque=RxData[3];
-			  i32_Gauge_Torque_cumulated -= (i32_Gauge_Torque_cumulated>>FILTER); // FILTER = 6 für 1s Zeitkonstante
+			  i32_Gauge_Torque_cumulated -= (i32_Gauge_Torque_cumulated>>MS.Filter); // FILTER = 6 für 1s Zeitkonstante
 			  i32_Gauge_Torque_cumulated += i16_Gauge_Torque;
 
 			  break;
@@ -498,6 +498,12 @@ int main(void)
 		  case REG_MOTOR_STATUS_POWER_VOLTAGE_LO:
 
 			  ch_BatteryVoltage_Lo=RxData[3];
+
+			  break;
+
+		  case REG_MOTOR_TORQUE_GAUGE_GAIN:
+
+			  ui16_Gauge_Gain=RxData[3];
 
 			  break;
 
