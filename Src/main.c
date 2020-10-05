@@ -78,6 +78,7 @@ char ch_BatteryVoltage_Hi=0;
 
 int8_t i8_Throttle=0; //must be scaled to valid values from -64 ... +64
 int16_t i16_Gauge_Torque=0;
+int16_t i16_Gauge_Timeout_counter=0;
 int16_t i16_Gauge_Voltage=0;
 uint16_t ui16_Ext_Torque=0;
 uint32_t ui32_Ext_Torque_Cumulated=0;
@@ -288,7 +289,15 @@ int main(void)
 				  if(!MS.Throttle_Function)i8_Throttle=-i8_Throttle;
 			  }
 			  // if internal Gauge is active (selected by P3), calculate current target form Gauge Value,
-			  else if(MS.Gauge_Ext_Torq_Flag)i16_Current_Target = (CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>MS.Filter)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
+			  else if(MS.Gauge_Ext_Torq_Flag){
+				  i16_Current_Target = (CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>MS.Filter)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
+			  	  if(!i16_Gauge_Torque)i16_Gauge_Timeout_counter++;  	//count up readings with gauge value == 0
+			  	  else i16_Gauge_Timeout_counter = 0;					//reset timeout counter, when gauge value != 0
+			  	  if (i16_Gauge_Timeout_counter>PAS_TIMEOUT-1){			//if gauge value has timed out, slowly decrease Torque_cumulated.
+			  		  i16_Gauge_Timeout_counter=PAS_TIMEOUT;
+			  		  if(i32_Gauge_Torque_cumulated>0)i32_Gauge_Torque_cumulated--;
+			  	  }
+			  }
 			  // if external torque sensor is active
 			  else {
 				  i16_Current_Target = (((ui32_Ext_Torque_Cumulated>>MS.Filter)*MS.Assist_Level*MS.Gauge_Factor)>>CALIB_EXT_TORQUE)/(i16_PAS_Duration*(MS.Speed+1));
@@ -306,7 +315,7 @@ int main(void)
 
 			  if(!MS.Throttle_Function){
 				  // Throttle override for regen and assist
-				  if(i16_Current_Target>=0 && i8_Throttle>0 && i8_Throttle>i16_Current_Target)i16_Current_Target=i8_Throttle;
+				  if(i16_Current_Target>=0 && i8_Throttle>0 && i8_Throttle>i16_Current_Target && (MS.Speed<7 || i16_PAS_Counter<PAS_TIMEOUT-1 ))i16_Current_Target=i8_Throttle;
 				  if(i16_Current_Target<=0 && i8_Throttle<0 && i8_Throttle<i16_Current_Target)i16_Current_Target=i8_Throttle;
 			  }
 			  else {//linear regen with throttle

@@ -29,5 +29,5 @@
 #define I_FACTOR 0.0001
 
 //Select display
-#define DISPLAY_TYPE DISPLAY_TYPE_DEBUG
+#define DISPLAY_TYPE DISPLAY_TYPE_KUNTENG
 #endif /* CONFIG_H_ */
