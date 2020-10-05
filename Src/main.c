@@ -288,7 +288,7 @@ int main(void)
 				  i16_Current_Target = (-CALIB_REGEN*MS.Assist_Level)/5;		//permanent regen switched by tip on brake lever in level 0
 				  if(!MS.Throttle_Function)i8_Throttle=-i8_Throttle;
 			  }
-			  // if internal Gauge is active (selected by P3), calculate current target form Gauge Value,
+			  // if internal Gauge is active (selected by P3), calculate current target from Gauge Value,
 			  else if(MS.Gauge_Ext_Torq_Flag){
 				  i16_Current_Target = (CALIB_GAUGE*(i32_Gauge_Torque_cumulated>>MS.Filter)*MS.Assist_Level*MS.Gauge_Factor)>>7; //normal ride mode
 			  	  if(!i16_Gauge_Torque)i16_Gauge_Timeout_counter++;  	//count up readings with gauge value == 0
@@ -315,7 +315,13 @@ int main(void)
 
 			  if(!MS.Throttle_Function){
 				  // Throttle override for regen and assist
-				  if(i16_Current_Target>=0 && i8_Throttle>0 && i8_Throttle>i16_Current_Target && (MS.Speed<7 || i16_PAS_Counter<PAS_TIMEOUT-1 ))i16_Current_Target=i8_Throttle;
+
+				  if(MS.Gauge_Ext_Torq_Flag){
+					  if(i16_Current_Target>=0 && i8_Throttle>0 && i8_Throttle>i16_Current_Target && (MS.Speed<7 || i16_Gauge_Timeout_counter<PAS_TIMEOUT-1 ))i16_Current_Target=i8_Throttle;
+				  }
+				  else {
+					  if(i16_Current_Target>=0 && i8_Throttle>0 && i8_Throttle>i16_Current_Target && (MS.Speed<7 || i16_PAS_Counter<PAS_TIMEOUT-1 ))i16_Current_Target=i8_Throttle;
+				  }
 				  if(i16_Current_Target<=0 && i8_Throttle<0 && i8_Throttle<i16_Current_Target)i16_Current_Target=i8_Throttle;
 			  }
 			  else {//linear regen with throttle
