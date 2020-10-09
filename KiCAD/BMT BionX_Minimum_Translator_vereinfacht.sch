@@ -124,8 +124,6 @@ Wire Wire Line
 Wire Wire Line
 	7700 950  8700 950 
 Wire Wire Line
-	7900 2950 7900 2700
-Wire Wire Line
 	7900 1500 8700 1500
 Wire Wire Line
 	8150 3550 8150 2000
@@ -172,7 +170,6 @@ Wire Wire Line
 Connection ~ 7900 2700
 Wire Wire Line
 	7900 2700 7900 2100
-Connection ~ 7900 2950
 $Comp
 L bluepill:BP U1
 U 1 1 5F24837F
@@ -671,8 +668,6 @@ Wire Wire Line
 	3450 6650 2450 6650
 Wire Wire Line
 	2750 1600 3900 1600
-Wire Wire Line
-	7900 2950 7900 3700
 $Comp
 L Transistor_BJT:BCP56 Q2
 U 1 1 5F835FF9
@@ -714,9 +709,6 @@ Wire Wire Line
 	4550 2950 4550 2350
 Wire Wire Line
 	4550 2350 4900 2350
-Connection ~ 4550 2950
-Wire Wire Line
-	4550 2950 7900 2950
 Wire Wire Line
 	5500 3950 5500 4100
 Wire Wire Line
@@ -734,4 +726,20 @@ Wire Wire Line
 	3900 2300 5500 2300
 Wire Wire Line
 	2050 4350 2750 4350
+Wire Wire Line
+	7900 2700 7900 3700
+$Comp
+L power:GND #PWR?
+U 1 1 5F810322
+P 7900 3900
+F 0 "#PWR?" H 7900 3650 50  0001 C CNN
+F 1 "GND" H 7905 3727 50  0000 C CNN
+F 2 "" H 7900 3900 50  0001 C CNN
+F 3 "" H 7900 3900 50  0001 C CNN
+	1    7900 3900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7900 3900 7900 3700
+Connection ~ 7900 3700
 $EndSCHEMATC
