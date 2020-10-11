@@ -1,3 +1,0 @@
-(fp_lib_table
-  (lib (name BMT)(type KiCad)(uri ${KIPRJMOD}/BMT.pretty)(options "")(descr ""))
-)
