@@ -120,8 +120,6 @@ F 3 "~" H 8900 950 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	7700 1600 7700 950 
-Wire Wire Line
 	7700 950  8700 950 
 Wire Wire Line
 	7900 1500 8700 1500
@@ -169,14 +167,14 @@ Wire Wire Line
 	7900 2700 8700 2700
 Connection ~ 7900 2700
 Wire Wire Line
-	7900 2700 7900 2100
+	7900 2700 7900 2600
 $Comp
 L bluepill:BP U1
 U 1 1 5F24837F
 P 5500 6200
 F 0 "U1" H 5500 7450 60  0000 C CNN
 F 1 "BP" H 5500 7344 60  0000 C CNN
-F 2 "" H 5400 6950 60  0001 C CNN
+F 2 "Module:BluePill" H 5400 6950 60  0001 C CNN
 F 3 "" H 5400 6950 60  0001 C CNN
 	1    5500 6200
 	1    0    0    -1  
@@ -264,27 +262,14 @@ Wire Wire Line
 Wire Wire Line
 	8250 1700 8700 1700
 Wire Wire Line
-	8700 2300 8300 2300
-Wire Wire Line
-	8300 2300 8300 4750
-Wire Wire Line
-	8300 4750 4600 4750
-Wire Wire Line
 	4600 4750 4600 6500
 Wire Wire Line
 	4600 6500 4750 6500
-Wire Wire Line
-	8700 2800 8350 2800
-Wire Wire Line
-	8350 2800 8350 4900
-Wire Wire Line
-	8350 4900 4650 4900
 Wire Wire Line
 	4650 4900 4650 6600
 Wire Wire Line
 	4650 6600 4750 6600
 Connection ~ 2050 4100
-Connection ~ 2750 1600
 Wire Wire Line
 	7850 1050 8700 1050
 Wire Wire Line
@@ -355,7 +340,7 @@ U 1 1 5F2B86D5
 P 9150 5700
 F 0 "J7" H 9122 5674 50  0000 R CNN
 F 1 "CAN Connector" H 9450 5500 50  0000 R CNN
-F 2 "Connector_JST:JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical" H 9150 5700 50  0001 C CNN
+F 2 "Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical" H 9150 5700 50  0001 C CNN
 F 3 "~" H 9150 5700 50  0001 C CNN
 	1    9150 5700
 	-1   0    0    -1  
@@ -524,118 +509,11 @@ Wire Wire Line
 Connection ~ 9050 5000
 Wire Wire Line
 	6500 2750 6500 4300
-$Comp
-L power:-BATT #PWR0104
-U 1 1 5F41583E
-P 1000 7500
-F 0 "#PWR0104" H 1000 7350 50  0001 C CNN
-F 1 "-BATT" H 1015 7673 50  0000 C CNN
-F 2 "" H 1000 7500 50  0001 C CNN
-F 3 "" H 1000 7500 50  0001 C CNN
-	1    1000 7500
-	1    0    0    -1  
-$EndComp
-$Comp
-L Transistor_FET:IRF6644 Q1
-U 1 1 5F420D63
-P 2350 6850
-F 0 "Q1" H 2556 6896 50  0000 L CNN
-F 1 "IRF6644" H 2556 6805 50  0000 L CNN
-F 2 "Package_TO_SOT_THT:TO-220-3_Vertical" H 2350 6850 50  0001 C CIN
-F 3 "https://www.infineon.com/dgdl/Infineon-IRF6644-DS-v01_01-EN.pdf?fileId=5546d462533600a4015355ec47ac1a4f" H 2350 6850 50  0001 L CNN
-	1    2350 6850
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	2450 7050 2450 7500
 Wire Wire Line
 	3950 6650 3450 6650
 Connection ~ 3950 6650
 Wire Wire Line
 	3950 6650 3950 7550
-$Comp
-L Device:R R1
-U 1 1 5F441C3E
-P 1750 6350
-F 0 "R1" H 1820 6396 50  0000 L CNN
-F 1 "56k" H 1820 6305 50  0000 L CNN
-F 2 "Resistor_SMD:R_2512_6332Metric" V 1680 6350 50  0001 C CNN
-F 3 "~" H 1750 6350 50  0001 C CNN
-	1    1750 6350
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:R R2
-U 1 1 5F441C44
-P 1750 6900
-F 0 "R2" H 1820 6946 50  0000 L CNN
-F 1 "22k" H 1820 6855 50  0000 L CNN
-F 2 "Resistor_SMD:R_2512_6332Metric" V 1680 6900 50  0001 C CNN
-F 3 "~" H 1750 6900 50  0001 C CNN
-	1    1750 6900
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	1750 6500 1750 6550
-Wire Wire Line
-	1750 7050 1750 7100
-Connection ~ 1750 6550
-Wire Wire Line
-	1750 6550 1750 6750
-$Comp
-L Device:CP C1
-U 1 1 5F441C4F
-P 1500 6950
-F 0 "C1" H 1618 6996 50  0000 L CNN
-F 1 "47µ" H 1618 6905 50  0000 L CNN
-F 2 "Capacitor_THT:CP_Radial_D5.0mm_P2.50mm" H 1538 6800 50  0001 C CNN
-F 3 "~" H 1500 6950 50  0001 C CNN
-	1    1500 6950
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	1500 7100 1750 7100
-Wire Wire Line
-	1500 6800 1500 6550
-Wire Wire Line
-	1500 6550 1750 6550
-Connection ~ 1750 7100
-Wire Wire Line
-	1000 7500 1750 7500
-Wire Wire Line
-	1750 7100 1750 7500
-Connection ~ 1750 7500
-Wire Wire Line
-	1750 7500 2450 7500
-Wire Wire Line
-	2150 6550 2150 6850
-Wire Wire Line
-	1750 6550 2150 6550
-$Comp
-L Switch:SW_DPST_x2 SW1
-U 1 1 5F47629F
-P 1750 6000
-F 0 "SW1" V 1796 5912 50  0000 R CNN
-F 1 "SW_DPST_x2" V 1705 5912 50  0000 R CNN
-F 2 "Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical" H 1750 6000 50  0001 C CNN
-F 3 "~" H 1750 6000 50  0001 C CNN
-	1    1750 6000
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	1550 5550 1750 5550
-Wire Wire Line
-	1750 5550 1750 5800
-Wire Notes Line
-	1350 7650 2950 7650
-Wire Notes Line
-	2950 7650 2950 5750
-Wire Notes Line
-	2950 5750 1350 5750
-Wire Notes Line
-	1350 5750 1350 7650
-Text Notes 1350 7750 0    50   ~ 0
-Antiblitzschaltung optional für Akkus ohne Schalter am BMS
 Wire Wire Line
 	7500 6400 6850 6400
 Wire Wire Line
@@ -643,13 +521,6 @@ Wire Wire Line
 Wire Wire Line
 	6850 7550 5650 7550
 Connection ~ 5650 7550
-Wire Wire Line
-	1000 1600 1550 1600
-Wire Wire Line
-	1550 1600 1550 5550
-Connection ~ 1550 1600
-Wire Wire Line
-	1550 1600 2750 1600
 $Comp
 L power:GND #PWR0105
 U 1 1 5F5E6360
@@ -663,31 +534,6 @@ F 3 "" H 3450 6900 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	3450 6900 3450 6650
-Connection ~ 3450 6650
-Wire Wire Line
-	3450 6650 2450 6650
-Wire Wire Line
-	2750 1600 3900 1600
-$Comp
-L Transistor_BJT:BCP56 Q2
-U 1 1 5F835FF9
-P 3800 2100
-F 0 "Q2" H 3991 2146 50  0000 L CNN
-F 1 "BCP56" H 3991 2055 50  0000 L CNN
-F 2 "Package_TO_SOT_THT:TO-220-3_Vertical" H 4000 2025 50  0001 L CIN
-F 3 "http://cache.nxp.com/documents/data_sheet/BCP56_BCX56_BC56PA.pdf?pspll=1" H 3800 2100 50  0001 L CNN
-	1    3800 2100
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	3900 1600 3900 1900
-Connection ~ 3900 1600
-Wire Wire Line
-	3900 1600 7700 1600
-Wire Wire Line
-	3000 2200 3000 2100
-Wire Wire Line
-	3000 2100 3600 2100
 Wire Wire Line
 	3950 2950 4550 2950
 Wire Wire Line
@@ -703,8 +549,6 @@ F 3 "" H 5200 5400 50  0001 C CNN
 	1    4700 3850
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	5500 2300 5500 2350
 Wire Wire Line
 	4550 2950 4550 2350
 Wire Wire Line
@@ -723,11 +567,9 @@ Connection ~ 6500 4300
 Wire Wire Line
 	6500 4300 6500 5150
 Wire Wire Line
-	3900 2300 5500 2300
-Wire Wire Line
 	2050 4350 2750 4350
 Wire Wire Line
-	7900 2700 7900 3700
+	7900 2700 7900 3200
 $Comp
 L power:GND #PWR0106
 U 1 1 5F810322
@@ -742,4 +584,183 @@ $EndComp
 Wire Wire Line
 	7900 3900 7900 3700
 Connection ~ 7900 3700
+Wire Wire Line
+	1000 1600 1150 1600
+$Comp
+L Connector:Conn_01x02_Female J9
+U 1 1 5F8471F1
+P 950 1850
+F 0 "J9" H 978 1826 50  0000 L CNN
+F 1 "Batterieanschluß" H 750 1600 50  0000 L CNN
+F 2 "Connector_Wago:Wago_734-132_1x02_P3.50mm_Vertical" H 950 1850 50  0001 C CNN
+F 3 "~" H 950 1850 50  0001 C CNN
+	1    950  1850
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	1150 1600 1150 1850
+Connection ~ 1150 1600
+Wire Wire Line
+	1150 1600 2750 1600
+Wire Wire Line
+	2050 4350 1300 4350
+Wire Wire Line
+	1300 4350 1300 2100
+Wire Wire Line
+	1300 1950 1150 1950
+Connection ~ 2050 4350
+$Comp
+L Transistor_FET:IRF3205 Q1
+U 1 1 5F85B71C
+P 4100 1550
+F 0 "Q1" V 4443 1550 50  0000 C CNN
+F 1 "IRF3205" V 4352 1550 50  0000 C CNN
+F 2 "Package_TO_SOT_THT:TO-220-3_Vertical" H 4350 1475 50  0001 L CIN
+F 3 "http://www.irf.com/product-info/datasheets/data/irf3205.pdf" H 4100 1550 50  0001 L CNN
+	1    4100 1550
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Transistor_FET:IRF3205 Q2
+U 1 1 5F863283
+P 4750 1550
+F 0 "Q2" V 5093 1550 50  0000 C CNN
+F 1 "IRF3205" V 5002 1550 50  0000 C CNN
+F 2 "Package_TO_SOT_THT:TO-220-3_Vertical" H 5000 1475 50  0001 L CIN
+F 3 "http://www.irf.com/product-info/datasheets/data/irf3205.pdf" H 4750 1550 50  0001 L CNN
+	1    4750 1550
+	0    1    -1   0   
+$EndComp
+Wire Wire Line
+	4300 1450 4400 1450
+Wire Wire Line
+	4950 1450 5500 1450
+Wire Wire Line
+	7700 1450 7700 950 
+Wire Wire Line
+	2750 1600 2750 1450
+Wire Wire Line
+	2750 1450 3900 1450
+Connection ~ 2750 1600
+Wire Wire Line
+	4100 1750 4500 1750
+Connection ~ 5500 1450
+Wire Wire Line
+	5500 1450 7700 1450
+Wire Wire Line
+	5500 1450 5500 2350
+$Comp
+L Driver_FET:VOM1271 U3
+U 1 1 5F894B49
+P 3500 1600
+F 0 "U3" H 3500 1615 50  0000 C CNN
+F 1 "VOM1271" H 3500 1524 50  0000 C CNN
+F 2 "Package_SO:SOP-4_3.8x4.1mm_P2.54mm" H 3500 1600 50  0001 C CNN
+F 3 "" H 3500 1600 50  0001 C CNN
+	1    3500 1600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3000 1850 3200 1850
+Wire Wire Line
+	3000 1850 3000 2200
+Wire Wire Line
+	1300 2100 3200 2100
+Connection ~ 1300 2100
+Wire Wire Line
+	1300 2100 1300 1950
+Wire Wire Line
+	3800 1850 4400 1850
+Wire Wire Line
+	4400 1850 4400 1450
+Connection ~ 4400 1450
+Wire Wire Line
+	4400 1450 4550 1450
+Wire Wire Line
+	4500 1750 4500 2100
+Wire Wire Line
+	4500 2100 3800 2100
+Connection ~ 4500 1750
+Wire Wire Line
+	4500 1750 4750 1750
+$Comp
+L Device:CP C1
+U 1 1 5F8D8DC7
+P 7200 3050
+F 0 "C1" H 7318 3096 50  0000 L CNN
+F 1 "10µ" H 7318 3005 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D5.0mm_P2.50mm" H 7238 2900 50  0001 C CNN
+F 3 "~" H 7200 3050 50  0001 C CNN
+	1    7200 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R1
+U 1 1 5F8DB379
+P 7500 2900
+F 0 "R1" H 7570 2946 50  0000 L CNN
+F 1 "2.2k" H 7570 2855 50  0000 L CNN
+F 2 "Resistor_SMD:R_2512_6332Metric" V 7430 2900 50  0001 C CNN
+F 3 "~" H 7500 2900 50  0001 C CNN
+	1    7500 2900
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7750 2800 7750 2900
+Wire Wire Line
+	7750 2900 7650 2900
+Wire Wire Line
+	7350 2900 7200 2900
+Wire Wire Line
+	7200 3200 7900 3200
+Connection ~ 7900 3200
+Wire Wire Line
+	7900 3200 7900 3700
+$Comp
+L Device:R R2
+U 1 1 5F904857
+P 7650 2300
+F 0 "R2" H 7720 2346 50  0000 L CNN
+F 1 "2.2k" H 7720 2255 50  0000 L CNN
+F 2 "Resistor_SMD:R_2512_6332Metric" V 7580 2300 50  0001 C CNN
+F 3 "~" H 7650 2300 50  0001 C CNN
+	1    7650 2300
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:CP C5
+U 1 1 5F905993
+P 7400 2450
+F 0 "C5" H 7518 2496 50  0000 L CNN
+F 1 "10µ" H 7518 2405 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D5.0mm_P2.50mm" H 7438 2300 50  0001 C CNN
+F 3 "~" H 7400 2450 50  0001 C CNN
+	1    7400 2450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7750 2800 8700 2800
+Wire Wire Line
+	7200 2900 7000 2900
+Connection ~ 7200 2900
+Wire Wire Line
+	7000 4900 4650 4900
+Wire Wire Line
+	7500 2300 7400 2300
+Wire Wire Line
+	7400 2600 7900 2600
+Connection ~ 7900 2600
+Wire Wire Line
+	7900 2600 7900 2100
+Wire Wire Line
+	7800 2300 8700 2300
+Wire Wire Line
+	7000 2900 7000 4900
+Wire Wire Line
+	6900 4750 6900 2300
+Wire Wire Line
+	6900 2300 7400 2300
+Wire Wire Line
+	6900 4750 4600 4750
+Connection ~ 7400 2300
 $EndSCHEMATC
