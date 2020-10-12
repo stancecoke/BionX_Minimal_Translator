@@ -522,8 +522,6 @@ Wire Wire Line
 	7700 1450 7700 950 
 Wire Wire Line
 	2750 1600 2750 1450
-Wire Wire Line
-	2750 1450 3750 1450
 Connection ~ 2750 1600
 $Comp
 L Driver_FET:VOM1271 U3
@@ -725,7 +723,7 @@ Wire Wire Line
 Wire Wire Line
 	1300 1950 1300 2050
 Wire Wire Line
-	4300 1450 4450 1450
+	4300 1450 4350 1450
 Wire Wire Line
 	3250 2200 3250 1950
 Wire Wire Line
@@ -774,22 +772,16 @@ Wire Wire Line
 $Comp
 L Device:D_Zener D1
 U 1 1 5F8D8CD0
-P 3750 1600
-F 0 "D1" V 3796 1521 50  0000 R CNN
-F 1 "15V" V 3705 1521 50  0000 R CNN
-F 2 "Diode_SMD:D_0805_2012Metric" H 3750 1600 50  0001 C CNN
-F 3 "~" H 3750 1600 50  0001 C CNN
-	1    3750 1600
+P 4350 1600
+F 0 "D1" V 4396 1521 50  0000 R CNN
+F 1 "15V" V 4305 1521 50  0000 R CNN
+F 2 "Diode_SMD:D_0805_2012Metric" H 4350 1600 50  0001 C CNN
+F 3 "~" H 4350 1600 50  0001 C CNN
+	1    4350 1600
 	0    -1   -1   0   
 $EndComp
-Connection ~ 3750 1450
 Wire Wire Line
-	3750 1450 3900 1450
-Wire Wire Line
-	3750 1750 4100 1750
-Connection ~ 4100 1750
-Wire Wire Line
-	4100 1750 4600 1750
+	4100 1750 4350 1750
 $Comp
 L Connector:Conn_01x05_Male J1
 U 1 1 5F8510AE
@@ -826,4 +818,12 @@ Wire Wire Line
 	4350 2850 4350 4600
 Wire Wire Line
 	3150 2850 4350 2850
+Connection ~ 4350 1750
+Wire Wire Line
+	4350 1750 4600 1750
+Connection ~ 4350 1450
+Wire Wire Line
+	4350 1450 4450 1450
+Wire Wire Line
+	2750 1450 3900 1450
 $EndSCHEMATC

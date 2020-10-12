@@ -650,13 +650,6 @@ F 3 "~" H 6650 1900 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	4950 1450 5750 1450
-Connection ~ 5750 1450
-Wire Wire Line
-	5750 1450 7700 1450
-Wire Wire Line
-	5750 1450 5750 2150
-Wire Wire Line
 	6200 3550 6200 4100
 Wire Wire Line
 	5500 4100 6200 4100
@@ -675,8 +668,6 @@ Wire Wire Line
 	3950 3650 3950 6650
 Wire Wire Line
 	3950 3650 4800 3650
-Wire Wire Line
-	4800 3650 4800 2150
 Connection ~ 3950 3650
 $Comp
 L stepdownmodule_12v_5_v:SD12-5 U4
@@ -690,13 +681,7 @@ F 3 "" H 5550 2500 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5500 2150 5500 2550
-Wire Wire Line
-	4800 2150 5500 2150
-Wire Wire Line
 	5750 2150 5650 2150
-Wire Wire Line
-	5650 2150 5650 2550
 Wire Wire Line
 	5650 2900 5650 3350
 Wire Wire Line
@@ -805,9 +790,6 @@ Wire Wire Line
 	2750 3100 3350 3100
 Wire Wire Line
 	3350 2750 3150 2750
-Connection ~ 2750 3100
-Wire Wire Line
-	2750 3100 2750 2850
 Wire Wire Line
 	3350 2750 3350 3100
 Wire Wire Line
@@ -826,4 +808,101 @@ Wire Wire Line
 	4350 1450 4450 1450
 Wire Wire Line
 	2750 1450 3900 1450
+Wire Wire Line
+	4950 1450 7700 1450
+$Comp
+L Transistor_BJT:BCP56 Q3
+U 1 1 5F8B6DF6
+P 5650 1950
+F 0 "Q3" H 5841 1996 50  0000 L CNN
+F 1 "BCP56" H 5841 1905 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-223" H 5850 1875 50  0001 L CIN
+F 3 "http://cache.nxp.com/documents/data_sheet/BCP56_BCX56_BC56PA.pdf?pspll=1" H 5650 1950 50  0001 L CNN
+	1    5650 1950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2750 1450 2750 1100
+Wire Wire Line
+	2750 1100 5750 1100
+Wire Wire Line
+	5750 1100 5750 1750
+Connection ~ 2750 1450
+$Comp
+L Device:R R12
+U 1 1 5F8C4819
+P 5650 2300
+F 0 "R12" H 5720 2346 50  0000 L CNN
+F 1 "22" H 5720 2255 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 5580 2300 50  0001 C CNN
+F 3 "~" H 5650 2300 50  0001 C CNN
+	1    5650 2300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5650 2450 5650 2550
+$Comp
+L Device:R R11
+U 1 1 5F8D30A0
+P 4950 2400
+F 0 "R11" H 5020 2446 50  0000 L CNN
+F 1 "2.2k" H 5020 2355 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 4880 2400 50  0001 C CNN
+F 3 "~" H 4950 2400 50  0001 C CNN
+	1    4950 2400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4950 2100 4950 2250
+Connection ~ 4950 2250
+$Comp
+L Device:CP C6
+U 1 1 5F8D30B8
+P 4600 2400
+F 0 "C6" H 4718 2446 50  0000 L CNN
+F 1 "10µ" H 4718 2355 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D5.0mm_P2.50mm" H 4638 2250 50  0001 C CNN
+F 3 "~" H 4600 2400 50  0001 C CNN
+	1    4600 2400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4600 2250 4950 2250
+Wire Wire Line
+	4600 2550 4950 2550
+Connection ~ 4950 2550
+$Comp
+L Device:R R9
+U 1 1 5F8D30C6
+P 4950 1950
+F 0 "R9" H 5020 1996 50  0000 L CNN
+F 1 "1k" H 5020 1905 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 4880 1950 50  0001 C CNN
+F 3 "~" H 4950 1950 50  0001 C CNN
+	1    4950 1950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5500 2550 4950 2550
+Wire Wire Line
+	4950 2250 5450 2250
+Wire Wire Line
+	5450 2250 5450 1950
+Wire Wire Line
+	3650 3450 4500 3450
+Wire Wire Line
+	4500 3450 4500 2100
+Wire Wire Line
+	4500 2100 4800 2100
+Wire Wire Line
+	4800 2100 4800 1800
+Wire Wire Line
+	4800 1800 4950 1800
+Connection ~ 3650 3450
+Wire Wire Line
+	4800 3650 4800 2750
+Wire Wire Line
+	4800 2750 4950 2750
+Wire Wire Line
+	4950 2750 4950 2550
 $EndSCHEMATC
