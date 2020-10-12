@@ -94,9 +94,6 @@ Wire Wire Line
 	1800 3550 2050 3550
 Wire Wire Line
 	3700 3650 3950 3650
-Wire Wire Line
-	3950 2950 3950 3650
-Connection ~ 3950 3650
 $Comp
 L Connector:Conn_01x04_Male J3
 U 1 1 5F240083
@@ -168,17 +165,6 @@ Wire Wire Line
 Connection ~ 7900 2700
 Wire Wire Line
 	7900 2700 7900 2600
-$Comp
-L bluepill:BP U1
-U 1 1 5F24837F
-P 5500 6200
-F 0 "U1" H 5500 7450 60  0000 C CNN
-F 1 "BP" H 5500 7344 60  0000 C CNN
-F 2 "Module:BluePill" H 5400 6950 60  0001 C CNN
-F 3 "" H 5400 6950 60  0001 C CNN
-	1    5500 6200
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	3950 7550 5650 7550
 Wire Wire Line
@@ -199,13 +185,13 @@ U 1 1 5F254E8C
 P 7500 5650
 F 0 "U2" H 7500 6228 50  0000 C CNN
 F 1 "MCP2551-CAN Transceiver" H 7500 6137 50  0000 C CNN
-F 2 "Package_DIP:DIP-8_W7.62mm" H 7500 5150 50  0001 C CIN
+F 2 "Package_SO:SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.29x3mm" H 7500 5150 50  0001 C CIN
 F 3 "http://ww1.microchip.com/downloads/en/devicedoc/21667d.pdf" H 7500 5650 50  0001 C CNN
 	1    7500 5650
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5900 3550 8150 3550
+	6200 3550 8150 3550
 Wire Wire Line
 	6500 5150 5650 5150
 Wire Wire Line
@@ -248,7 +234,7 @@ Connection ~ 7500 2750
 Wire Wire Line
 	7500 2750 8100 2750
 Wire Wire Line
-	7500 6400 7500 6050
+	7500 6400 7500 6150
 Wire Wire Line
 	8000 5550 8200 5550
 Wire Wire Line
@@ -296,44 +282,10 @@ Wire Wire Line
 Connection ~ 7900 1500
 Wire Wire Line
 	2750 4350 3700 4350
-$Comp
-L Device:R R9
-U 1 1 5F28C11A
-P 10200 5750
-F 0 "R9" H 10270 5796 50  0000 L CNN
-F 1 "120" H 10270 5705 50  0000 L CNN
-F 2 "Resistor_SMD:R_2512_6332Metric" V 10130 5750 50  0001 C CNN
-F 3 "~" H 10200 5750 50  0001 C CNN
-	1    10200 5750
-	1    0    0    -1  
-$EndComp
 Connection ~ 8200 5550
 Wire Wire Line
 	8250 5800 8250 5750
 Connection ~ 8250 5750
-$Comp
-L Connector:Conn_01x02_Female J8
-U 1 1 5F29F99C
-P 9500 5700
-F 0 "J8" H 9527 5676 50  0000 L CNN
-F 1 "CAN Terminator" H 9100 5850 50  0000 L CNN
-F 2 "Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical" H 9500 5700 50  0001 C CNN
-F 3 "~" H 9500 5700 50  0001 C CNN
-	1    9500 5700
-	-1   0    0    -1  
-$EndComp
-Wire Wire Line
-	9650 5700 9700 5700
-Wire Wire Line
-	9900 5700 9900 5600
-Wire Wire Line
-	9900 5600 10200 5600
-Wire Wire Line
-	9650 5800 9700 5800
-Wire Wire Line
-	10050 5800 10050 5900
-Wire Wire Line
-	10050 5900 10200 5900
 $Comp
 L Connector:Conn_01x02_Male J7
 U 1 1 5F2B86D5
@@ -351,12 +303,6 @@ Wire Wire Line
 	8250 5800 8950 5800
 Wire Wire Line
 	8200 5550 8950 5550
-Connection ~ 9700 5700
-Wire Wire Line
-	9700 5700 9900 5700
-Connection ~ 9700 5800
-Wire Wire Line
-	9700 5800 10050 5800
 $Comp
 L Connector:Conn_01x03_Female J6
 U 1 1 5F2F307C
@@ -443,17 +389,6 @@ F 3 "~" H 6650 2350 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R R5
-U 1 1 5F30EAB8
-P 6650 1900
-F 0 "R5" H 6720 1946 50  0000 L CNN
-F 1 "1k" H 6720 1855 50  0000 L CNN
-F 2 "Resistor_SMD:R_2512_6332Metric" V 6580 1900 50  0001 C CNN
-F 3 "~" H 6650 1900 50  0001 C CNN
-	1    6650 1900
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:GND #PWR0103
 U 1 1 5F30EAC3
 P 6650 2500
@@ -535,30 +470,7 @@ $EndComp
 Wire Wire Line
 	3450 6900 3450 6650
 Wire Wire Line
-	3950 2950 4550 2950
-Wire Wire Line
-	3950 3650 3950 6650
-$Comp
-L power:StepDownModule_12V_5_V #U0101
-U 1 1 5F85DD7B
-P 4700 3850
-F 0 "#U0101" H 5728 4596 50  0000 L CNN
-F 1 "StepDownModule_12V_5_V" H 5728 4505 50  0000 L CNN
-F 2 "" H 5200 5400 50  0001 C CNN
-F 3 "" H 5200 5400 50  0001 C CNN
-	1    4700 3850
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	4550 2950 4550 2350
-Wire Wire Line
-	4550 2350 4900 2350
-Wire Wire Line
 	5500 3950 5500 4100
-Wire Wire Line
-	5500 4100 5900 4100
-Wire Wire Line
-	5900 4100 5900 3550
 Wire Wire Line
 	6500 4300 4900 4300
 Wire Wire Line
@@ -634,8 +546,6 @@ $EndComp
 Wire Wire Line
 	4300 1450 4400 1450
 Wire Wire Line
-	4950 1450 5500 1450
-Wire Wire Line
 	7700 1450 7700 950 
 Wire Wire Line
 	2750 1600 2750 1450
@@ -644,11 +554,6 @@ Wire Wire Line
 Connection ~ 2750 1600
 Wire Wire Line
 	4100 1750 4500 1750
-Connection ~ 5500 1450
-Wire Wire Line
-	5500 1450 7700 1450
-Wire Wire Line
-	5500 1450 5500 2350
 $Comp
 L Driver_FET:VOM1271 U3
 U 1 1 5F894B49
@@ -763,4 +668,97 @@ Wire Wire Line
 Wire Wire Line
 	6900 4750 4600 4750
 Connection ~ 7400 2300
+$Comp
+L Device:R R10
+U 1 1 5F93F0A5
+P 7200 6150
+F 0 "R10" H 7270 6196 50  0000 L CNN
+F 1 "10k" H 7270 6105 50  0000 L CNN
+F 2 "Resistor_SMD:R_2512_6332Metric" V 7130 6150 50  0001 C CNN
+F 3 "~" H 7200 6150 50  0001 C CNN
+	1    7200 6150
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7350 6150 7500 6150
+Connection ~ 7500 6150
+Wire Wire Line
+	7500 6150 7500 6050
+Wire Wire Line
+	7050 6150 7000 6150
+Wire Wire Line
+	7000 6150 7000 5850
+Wire Wire Line
+	4900 3950 5150 3950
+Wire Wire Line
+	5750 3950 5500 3950
+$Comp
+L Device:R R5
+U 1 1 5F30EAB8
+P 6650 1900
+F 0 "R5" H 6720 1946 50  0000 L CNN
+F 1 "1k" H 6720 1855 50  0000 L CNN
+F 2 "Resistor_SMD:R_2512_6332Metric" V 6580 1900 50  0001 C CNN
+F 3 "~" H 6650 1900 50  0001 C CNN
+	1    6650 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4950 1450 5750 1450
+Connection ~ 5750 1450
+Wire Wire Line
+	5750 1450 7700 1450
+Wire Wire Line
+	5750 1450 5750 2150
+Wire Wire Line
+	6200 3550 6200 4100
+Wire Wire Line
+	5500 4100 6200 4100
+$Comp
+L bluepill:BP U1
+U 1 1 5F86BFEC
+P 5500 6200
+F 0 "U1" H 5500 5053 60  0000 C CNN
+F 1 "BP" H 5500 4947 60  0000 C CNN
+F 2 "Module:BluePill" H 5400 6950 60  0001 C CNN
+F 3 "" H 5400 6950 60  0001 C CNN
+	1    5500 6200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3950 3650 3950 6650
+Wire Wire Line
+	3950 3650 4800 3650
+Wire Wire Line
+	4800 3650 4800 2150
+Connection ~ 3950 3650
+$Comp
+L stepdownmodule_12v_5_v:SD12-5 U4
+U 1 1 5F8B7249
+P 5550 2500
+F 0 "U4" H 5728 2366 50  0000 L CNN
+F 1 "SD12-5" H 5728 2275 50  0000 L CNN
+F 2 "Module:StepDownModule_12V_5V" H 5728 2184 50  0000 L CNN
+F 3 "" H 5550 2500 50  0001 C CNN
+	1    5550 2500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5500 2150 5500 2550
+Wire Wire Line
+	4800 2150 5500 2150
+Wire Wire Line
+	5750 2150 5650 2150
+Wire Wire Line
+	5650 2150 5650 2550
+Wire Wire Line
+	5650 2900 5650 3350
+Wire Wire Line
+	5650 3350 5750 3350
+Wire Wire Line
+	5750 3350 5750 3950
+Wire Wire Line
+	5150 2900 5500 2900
+Wire Wire Line
+	5150 2900 5150 3950
 $EndSCHEMATC

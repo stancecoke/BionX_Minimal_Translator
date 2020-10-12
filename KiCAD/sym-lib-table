@@ -1,4 +1,6 @@
 (sym_lib_table
   (lib (name bluepill)(type Legacy)(uri ${KIPRJMOD}/bluepill.lib)(options "")(descr ""))
   (lib (name BMT-BionX_Minimum_Translator-rescue)(type Legacy)(uri "${KIPRJMOD}/BMT BionX_Minimum_Translator-rescue.lib")(options "")(descr ""))
+  (lib (name stepdownmodule_12v_5_v)(type Legacy)(uri ${KIPRJMOD}/stepdownmodule_12v_5_v.lib)(options "")(descr ""))
+  (lib (name BMT-BionX_Minimum_Translator_vereinfacht-rescue)(type Legacy)(uri "${KIPRJMOD}/BMT BionX_Minimum_Translator_vereinfacht-rescue.lib")(options "")(descr ""))
 )

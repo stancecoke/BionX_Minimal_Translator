@@ -1,4 +1,4 @@
-16302632986039489
+16304235697505200
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin Battery Holder, BX0036, Battery Type C (https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -49698,7 +49698,7 @@ STM32F103-based development board
 stm32 arm
 0
 40
-40
+38
 Module
 Maple_Mini
 Maple Mini, http://docs.leaflabs.com/static.leaflabs.com/pub/leaflabs/maple-docs/0.0.12/hardware/maple-mini.html
@@ -49748,6 +49748,13 @@ ST Morpho Connector 144 STLink
 0
 148
 148
+Module
+StepDownModule_12V_5V
+
+
+0
+6
+6
 Module
 WEMOS_D1_mini_light
 16-pin module, column spacing 22.86 mm (900 mils), https://wiki.wemos.cc/products:d1:d1_mini, https://c1.staticflickr.com/1/734/31400410271_f278b087db_z.jpg
