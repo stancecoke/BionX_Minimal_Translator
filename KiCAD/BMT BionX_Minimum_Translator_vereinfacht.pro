@@ -1,4 +1,4 @@
-update=12.10.2020 13:11:20
+update=12.10.2020 16:52:14
 version=1
 last_client=kicad
 [general]
