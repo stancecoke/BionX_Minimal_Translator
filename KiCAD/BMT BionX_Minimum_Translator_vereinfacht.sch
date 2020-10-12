@@ -25,21 +25,10 @@ F 3 "" H 1000 1600 50  0001 C CNN
 	1    1000 1600
 	1    0    0    -1  
 $EndComp
-$Comp
-L Connector:LEMO5 J1
-U 1 1 5F23DDCC
-P 3050 2750
-F 0 "J1" H 3050 3167 50  0000 C CNN
-F 1 "Kunteng LCDx Display Connector" H 3050 3076 50  0000 C CNN
-F 2 "Connector_JST:JST_EH_B5B-EH-A_1x05_P2.50mm_Vertical" H 3050 2750 50  0001 C CNN
-F 3 " ~" H 3050 2750 50  0001 C CNN
-	1    3050 2750
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
-	2750 4350 2750 2850
+	2750 4350 2750 3100
 Wire Wire Line
-	2750 1600 2750 2550
+	2750 1600 2750 2350
 $Comp
 L Device:R R3
 U 1 1 5F23DFBE
@@ -62,10 +51,6 @@ F 3 "~" H 2050 3900 50  0001 C CNN
 	1    2050 3900
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3350 2550 3650 2550
-Wire Wire Line
-	3650 2550 3650 3450
 Wire Wire Line
 	2050 3500 2050 3550
 Wire Wire Line
@@ -197,17 +182,11 @@ Wire Wire Line
 Wire Wire Line
 	6500 2750 7500 2750
 Wire Wire Line
-	3350 2850 4350 2850
-Wire Wire Line
-	4350 2850 4350 4600
-Wire Wire Line
 	4350 4600 6650 4600
 Wire Wire Line
 	6650 4600 6650 6500
 Wire Wire Line
 	6650 6500 6250 6500
-Wire Wire Line
-	3050 3150 4300 3150
 Wire Wire Line
 	4300 3150 4300 4700
 Wire Wire Line
@@ -543,8 +522,6 @@ Wire Wire Line
 	7700 1450 7700 950 
 Wire Wire Line
 	2750 1600 2750 1450
-Wire Wire Line
-	2750 1450 3750 1450
 Connection ~ 2750 1600
 $Comp
 L Driver_FET:VOM1271 U3
@@ -746,7 +723,7 @@ Wire Wire Line
 Wire Wire Line
 	1300 1950 1300 2050
 Wire Wire Line
-	4300 1450 4450 1450
+	4300 1450 4350 1450
 Wire Wire Line
 	3250 2200 3250 1950
 Wire Wire Line
@@ -795,20 +772,58 @@ Wire Wire Line
 $Comp
 L Device:D_Zener D1
 U 1 1 5F8D8CD0
-P 3750 1600
-F 0 "D1" V 3796 1521 50  0000 R CNN
-F 1 "15V" V 3705 1521 50  0000 R CNN
-F 2 "Diode_SMD:D_0805_2012Metric" H 3750 1600 50  0001 C CNN
-F 3 "~" H 3750 1600 50  0001 C CNN
-	1    3750 1600
+P 4350 1600
+F 0 "D1" V 4396 1521 50  0000 R CNN
+F 1 "15V" V 4305 1521 50  0000 R CNN
+F 2 "Diode_SMD:D_0805_2012Metric" H 4350 1600 50  0001 C CNN
+F 3 "~" H 4350 1600 50  0001 C CNN
+	1    4350 1600
 	0    -1   -1   0   
 $EndComp
-Connection ~ 3750 1450
 Wire Wire Line
-	3750 1450 3900 1450
+	4100 1750 4350 1750
+$Comp
+L Connector:Conn_01x05_Male J1
+U 1 1 5F8510AE
+P 2950 2750
+F 0 "J1" H 3058 3131 50  0000 C CNN
+F 1 "Kunteng Display Connector" H 3058 3040 50  0000 C CNN
+F 2 "Connector_JST:JST_EH_B5B-EH-A_1x05_P2.50mm_Vertical" H 2950 2750 50  0001 C CNN
+F 3 "~" H 2950 2750 50  0001 C CNN
+	1    2950 2750
+	1    0    0    -1  
+$EndComp
 Wire Wire Line
-	3750 1750 4100 1750
-Connection ~ 4100 1750
+	2750 2350 3150 2350
 Wire Wire Line
-	4100 1750 4600 1750
+	3150 2350 3150 2550
+Wire Wire Line
+	3150 2650 3650 2650
+Wire Wire Line
+	3650 2650 3650 3450
+Wire Wire Line
+	2750 3100 3350 3100
+Wire Wire Line
+	3350 2750 3150 2750
+Connection ~ 2750 3100
+Wire Wire Line
+	2750 3100 2750 2850
+Wire Wire Line
+	3350 2750 3350 3100
+Wire Wire Line
+	3150 3150 3150 2950
+Wire Wire Line
+	3150 3150 4300 3150
+Wire Wire Line
+	4350 2850 4350 4600
+Wire Wire Line
+	3150 2850 4350 2850
+Connection ~ 4350 1750
+Wire Wire Line
+	4350 1750 4600 1750
+Connection ~ 4350 1450
+Wire Wire Line
+	4350 1450 4450 1450
+Wire Wire Line
+	2750 1450 3900 1450
 $EndSCHEMATC
