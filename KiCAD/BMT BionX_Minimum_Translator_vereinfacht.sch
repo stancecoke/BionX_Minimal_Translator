@@ -840,7 +840,7 @@ F 3 "~" H 5650 2300 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5650 2450 5650 2550
+	5650 2450 5650 2500
 $Comp
 L Device:R R11
 U 1 1 5F8D30A0
@@ -905,4 +905,147 @@ Wire Wire Line
 	4800 2750 4950 2750
 Wire Wire Line
 	4950 2750 4950 2550
+$Comp
+L Regulator_Linear:LM7812_TO220 U6
+U 1 1 5F87B01F
+P 2450 4950
+F 0 "U6" H 2450 5192 50  0000 C CNN
+F 1 "LM7812_TO220" H 2450 5101 50  0000 C CNN
+F 2 "Package_TO_SOT_THT:TO-220-3_Vertical" H 2450 5175 50  0001 C CIN
+F 3 "http://www.fairchildsemi.com/ds/LM/LM7805.pdf" H 2450 4900 50  0001 C CNN
+	1    2450 4950
+	1    0    0    -1  
+$EndComp
+$Comp
+L Regulator_Linear:LM7805_TO220 U7
+U 1 1 5F87C4AD
+P 2450 5650
+F 0 "U7" H 2450 5892 50  0000 C CNN
+F 1 "LM7805_TO220" H 2450 5801 50  0000 C CNN
+F 2 "Package_TO_SOT_THT:TO-220-3_Vertical" H 2450 5875 50  0001 C CIN
+F 3 "http://www.fairchildsemi.com/ds/LM/LM7805.pdf" H 2450 5600 50  0001 C CNN
+	1    2450 5650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:CP C8
+U 1 1 5F87D97A
+P 3000 5050
+F 0 "C8" H 3118 5096 50  0000 L CNN
+F 1 "10µ" H 3118 5005 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D5.0mm_P2.50mm" H 3038 4900 50  0001 C CNN
+F 3 "~" H 3000 5050 50  0001 C CNN
+	1    3000 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:CP C7
+U 1 1 5F87E84B
+P 1700 5050
+F 0 "C7" H 1818 5096 50  0000 L CNN
+F 1 "10µ" H 1818 5005 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D5.0mm_P2.50mm" H 1738 4900 50  0001 C CNN
+F 3 "~" H 1700 5050 50  0001 C CNN
+	1    1700 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:CP C9
+U 1 1 5F87F419
+P 3050 5700
+F 0 "C9" H 3168 5746 50  0000 L CNN
+F 1 "10µ" H 3168 5655 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D5.0mm_P2.50mm" H 3088 5550 50  0001 C CNN
+F 3 "~" H 3050 5700 50  0001 C CNN
+	1    3050 5700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1300 4350 1300 5250
+Wire Wire Line
+	1300 5250 1700 5250
+Connection ~ 1300 4350
+Wire Wire Line
+	2450 5250 3000 5250
+Wire Wire Line
+	3000 5250 3000 5200
+Connection ~ 2450 5250
+Wire Wire Line
+	1700 5250 1700 5200
+Connection ~ 1700 5250
+Wire Wire Line
+	1700 5250 2450 5250
+Wire Wire Line
+	1300 5250 1300 5950
+Wire Wire Line
+	1300 5950 2450 5950
+Connection ~ 1300 5250
+Wire Wire Line
+	2450 5950 3050 5950
+Wire Wire Line
+	3050 5850 3050 5950
+Connection ~ 2450 5950
+Wire Wire Line
+	4900 4300 4150 4300
+Wire Wire Line
+	4150 4300 4150 5450
+Wire Wire Line
+	4150 5450 3050 5450
+Wire Wire Line
+	2750 5450 2750 5650
+Connection ~ 4900 4300
+Wire Wire Line
+	3050 5450 3050 5550
+Connection ~ 3050 5450
+Wire Wire Line
+	3050 5450 2750 5450
+Wire Wire Line
+	5500 4100 3850 4100
+Wire Wire Line
+	3850 4100 3850 4900
+Wire Wire Line
+	3850 4900 3450 4900
+Connection ~ 5500 4100
+Wire Wire Line
+	2750 4900 2750 4950
+Wire Wire Line
+	3000 4900 2750 4900
+Connection ~ 3000 4900
+Wire Wire Line
+	5650 2500 5350 2500
+Wire Wire Line
+	5350 2500 5350 2750
+Wire Wire Line
+	5350 2750 5050 2750
+Wire Wire Line
+	5050 2750 5050 3850
+Wire Wire Line
+	5050 3850 3450 3850
+Wire Wire Line
+	3450 3850 3450 4600
+Wire Wire Line
+	3450 4600 2050 4600
+Wire Wire Line
+	2050 4600 2050 4900
+Wire Wire Line
+	2050 4950 2150 4950
+Connection ~ 5650 2500
+Wire Wire Line
+	5650 2500 5650 2550
+Wire Wire Line
+	2050 4900 1700 4900
+Connection ~ 2050 4900
+Wire Wire Line
+	2050 4900 2050 4950
+Wire Wire Line
+	3450 4900 3450 5350
+Wire Wire Line
+	3450 5350 2000 5350
+Wire Wire Line
+	2000 5350 2000 5650
+Wire Wire Line
+	2000 5650 2150 5650
+Connection ~ 3450 4900
+Wire Wire Line
+	3450 4900 3000 4900
 $EndSCHEMATC
