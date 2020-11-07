@@ -85,6 +85,7 @@ uint32_t ui32_Ext_Torque_Cumulated=0;
 int16_t i16_PAS_Counter=0;
 int16_t i16_PAS_Duration=PAS_TIMEOUT;
 int32_t i32_Gauge_Torque_cumulated=0;
+int32_t i32_Speed_cumulated=0;
 int16_t i16_Current_Target=0;
 uint16_t ui16_slow_loop_counter=0;
 uint16_t ui16_Gauge_Gain;
@@ -472,7 +473,9 @@ int main(void)
 
 		  case REG_MOTOR_STATUS_SPEED:
 
-			  MS.Speed=RxData[3];
+			  i32_Speed_cumulated -= i32_Speed_cumulated>>3;
+			  i32_Speed_cumulated += RxData[3];
+			  MS.Speed = i32_Speed_cumulated>>3;
 
 
 			  break;

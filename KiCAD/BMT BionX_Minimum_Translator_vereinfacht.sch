@@ -1048,4 +1048,221 @@ Wire Wire Line
 Connection ~ 3450 4900
 Wire Wire Line
 	3450 4900 3000 4900
+$Comp
+L Transistor_FET:IRF3205 Q?
+U 1 1 5FA7240E
+P -2000 750
+F 0 "Q?" V -1657 750 50  0000 C CNN
+F 1 "IRF3205" V -1748 750 50  0000 C CNN
+F 2 "Package_TO_SOT_THT:TO-220-3_Vertical" H -1750 675 50  0001 L CIN
+F 3 "http://www.irf.com/product-info/datasheets/data/irf3205.pdf" H -2000 750 50  0001 L CNN
+	1    -2000 750 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Transistor_FET:IRF3205 Q?
+U 1 1 5FA72414
+P -1350 750
+F 0 "Q?" V -1007 750 50  0000 C CNN
+F 1 "IRF3205" V -1098 750 50  0000 C CNN
+F 2 "Package_TO_SOT_THT:TO-220-3_Vertical" H -1100 675 50  0001 L CIN
+F 3 "http://www.irf.com/product-info/datasheets/data/irf3205.pdf" H -1350 750 50  0001 L CNN
+	1    -1350 750 
+	0    1    -1   0   
+$EndComp
+$Comp
+L Driver_FET:VOM1271 U?
+U 1 1 5FA7241A
+P -2000 900
+F 0 "U?" H -2000 915 50  0000 C CNN
+F 1 "VOM1271" H -2000 824 50  0000 C CNN
+F 2 "Package_SO:SOP-4_3.8x4.1mm_P2.54mm" H -2000 900 50  0001 C CNN
+F 3 "" H -2000 900 50  0001 C CNN
+	1    -2000 900 
+	1    0    0    -1  
+$EndComp
+$Comp
+L Driver_FET:VOM1271 U?
+U 1 1 5FA72420
+P -2000 1400
+F 0 "U?" H -2000 1415 50  0000 C CNN
+F 1 "VOM1271" H -2000 1324 50  0000 C CNN
+F 2 "Package_SO:SOP-4_3.8x4.1mm_P2.54mm" H -2000 1400 50  0001 C CNN
+F 3 "" H -2000 1400 50  0001 C CNN
+	1    -2000 1400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	-2350 1650 -2300 1650
+Wire Wire Line
+	-1700 1650 -1700 1400
+Wire Wire Line
+	-1700 1150 -1500 1150
+Wire Wire Line
+	-1700 1900 -1650 1900
+Wire Wire Line
+	-1650 1900 -1650 650 
+Connection ~ -1650 650 
+Wire Wire Line
+	-1650 650  -1550 650 
+$Comp
+L Device:D_Zener D?
+U 1 1 5FA7243B
+P -1500 1550
+F 0 "D?" V -1454 1471 50  0000 R CNN
+F 1 "15V" V -1545 1471 50  0000 R CNN
+F 2 "Diode_SMD:D_0805_2012Metric" H -1500 1550 50  0001 C CNN
+F 3 "~" H -1500 1550 50  0001 C CNN
+	1    -1500 1550
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	-3350 650  -3050 650 
+Wire Wire Line
+	-2300 1400 -2350 1400
+Wire Wire Line
+	-2350 1400 -2350 1650
+$Comp
+L Device:R R?
+U 1 1 5FAA2E19
+P -1350 1150
+F 0 "R?" H -1280 1196 50  0000 L CNN
+F 1 "360" H -1280 1105 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V -1420 1150 50  0001 C CNN
+F 3 "~" H -1350 1150 50  0001 C CNN
+	1    -1350 1150
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	-1500 1150 -1500 1400
+Wire Wire Line
+	-1800 650  -1650 650 
+Wire Wire Line
+	-2000 950  -1350 950 
+Connection ~ -1500 1150
+Wire Wire Line
+	-1500 1700 -1500 1900
+Wire Wire Line
+	-1500 1900 -1650 1900
+Connection ~ -1650 1900
+$Comp
+L Device:CP C?
+U 1 1 5FAE6A47
+P -1200 1750
+F 0 "C?" H -1082 1796 50  0000 L CNN
+F 1 "10µ" H -1082 1705 50  0000 L CNN
+F 2 "Capacitor_THT:CP_Radial_D5.0mm_P2.50mm" H -1162 1600 50  0001 C CNN
+F 3 "~" H -1200 1750 50  0001 C CNN
+	1    -1200 1750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	-1500 1900 -1200 1900
+Connection ~ -1500 1900
+Wire Wire Line
+	-1200 1600 -1200 1150
+Wire Wire Line
+	-1200 1150 -1200 950 
+Wire Wire Line
+	-1200 950  -1350 950 
+Connection ~ -1200 1150
+Connection ~ -1350 950 
+$Comp
+L Device:D_Zener D?
+U 1 1 5FB2B7AF
+P -2500 1500
+F 0 "D?" V -2454 1421 50  0000 R CNN
+F 1 "3.3V" V -2545 1421 50  0000 R CNN
+F 2 "Diode_SMD:D_0805_2012Metric" H -2500 1500 50  0001 C CNN
+F 3 "~" H -2500 1500 50  0001 C CNN
+	1    -2500 1500
+	0    1    1    0   
+$EndComp
+$Comp
+L Switch:SW_Push SW?
+U 1 1 5FB2D20E
+P -3050 850
+F 0 "SW?" V -3096 998 50  0000 L CNN
+F 1 "Schalter/Display" V -3005 998 50  0000 L CNN
+F 2 "" H -3050 1050 50  0001 C CNN
+F 3 "~" H -3050 1050 50  0001 C CNN
+	1    -3050 850 
+	0    1    1    0   
+$EndComp
+Connection ~ -3050 650 
+Wire Wire Line
+	-3050 650  -2200 650 
+$Comp
+L Device:R R?
+U 1 1 5FB45B50
+P -2700 1150
+F 0 "R?" H -2630 1196 50  0000 L CNN
+F 1 "4k7" H -2630 1105 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V -2770 1150 50  0001 C CNN
+F 3 "~" H -2700 1150 50  0001 C CNN
+	1    -2700 1150
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	-3050 1050 -3050 1150
+Wire Wire Line
+	-3050 1150 -2850 1150
+Wire Wire Line
+	-2550 1150 -2500 1150
+Wire Wire Line
+	-2500 1150 -2500 1350
+Connection ~ -2500 1150
+Wire Wire Line
+	-2500 1150 -2300 1150
+Wire Wire Line
+	-2500 1650 -2500 1900
+Wire Wire Line
+	-2500 1900 -2300 1900
+$Comp
+L power:+BATT #PWR?
+U 1 1 5FBA561B
+P -3350 650
+F 0 "#PWR?" H -3350 500 50  0001 C CNN
+F 1 "+BATT" H -3335 823 50  0000 C CNN
+F 2 "" H -3350 650 50  0001 C CNN
+F 3 "" H -3350 650 50  0001 C CNN
+	1    -3350 650 
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FBA62CD
+P -3300 1900
+F 0 "#PWR?" H -3300 1650 50  0001 C CNN
+F 1 "GND" H -3295 1727 50  0000 C CNN
+F 2 "" H -3300 1900 50  0001 C CNN
+F 3 "" H -3300 1900 50  0001 C CNN
+	1    -3300 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	-3300 1900 -2500 1900
+Connection ~ -2500 1900
+Wire Wire Line
+	-1150 650  -550 650 
+$Comp
+L Device:R R?
+U 1 1 5FBD75F6
+P -900 1500
+F 0 "R?" H -830 1546 50  0000 L CNN
+F 1 "1M" H -830 1455 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V -970 1500 50  0001 C CNN
+F 3 "~" H -900 1500 50  0001 C CNN
+	1    -900 1500
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	-1200 1150 -900 1150
+Wire Wire Line
+	-900 1150 -900 1350
+Wire Wire Line
+	-900 1650 -900 1900
+Wire Wire Line
+	-900 1900 -1200 1900
+Connection ~ -1200 1900
 $EndSCHEMATC
