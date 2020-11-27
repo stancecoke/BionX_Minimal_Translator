@@ -70,6 +70,9 @@ uint8_t CAN_RX_Flag=0;
 uint8_t CAN_TX_Flag=0;
 uint8_t Timer3_Flag=0;
 uint8_t ADC_Flag=0;
+uint8_t UART_Tx_lenght=0;
+uint8_t UART_Tx_async_flag=0;
+uint8_t UART_Tx_counter=0;
 int16_t i16_Gauge_Voltage=0;
 int16_t i16_Gauge_Voltage_Offset=0;
 int16_t i16_Pedal_Torque=0;
@@ -79,7 +82,7 @@ uint16_t ui16_slow_loop_counter=0;
 volatile uint16_t adcData[3]; //Buffer for ADC1 Input
 MotorState_t MS; //struct for motor state
 
-uint8_t               CAN_Buffer[7][2];
+uint8_t               CAN_Buffer[11][8];
 uint8_t               Buffer_Counter=0;
 
 CAN_TxHeaderTypeDef   TxHeader;
@@ -181,9 +184,10 @@ int main(void)
 	  if(UART_RX_Flag){
 		  UART_RX_Flag=0;
 		  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
-#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
+
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;
+
 
 
 		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %d, %d, %d\r\n",UART_RX_Buffer[0],UART_RX_Buffer[1], UART_RX_Buffer[2], UART_RX_Buffer[3]);
@@ -197,20 +201,14 @@ int main(void)
 
 		  }
 
-		  	  if(CAN_TX_Flag && UART_RX_Buffer[0]==1){
-		  		CAN_TX_Flag=0;
-		  		Send_CAN_Command(REG_MOTOR_PROTECT_UNLOCK,MOTOR_PROTECT_UNLOCK_KEY); //Unlock Motor for writing register
-		  		Send_CAN_Command(UART_RX_Buffer[1],((uint16_t)UART_RX_Buffer[2]<<8)+UART_RX_Buffer[3]); //send command with UART-Input
-		  	  }
-
-		  	  else{
-		  		Send_CAN_Request(UART_RX_Buffer[1]);
-		  	  }
 
 
-#endif
+
+
 
 	  } //end uart rx flag
+
+
 
 	  //Timer 3 running with 1kHz ISR frequency
 	  if(Timer3_Flag){
@@ -225,8 +223,6 @@ int main(void)
 			  ui16_slow_loop_counter=0;
 
 
-
-
 		  }//end slow loop
 	  }// end timer 1 kHz loop
 
@@ -235,124 +231,41 @@ int main(void)
 	  if(CAN_RX_Flag){
 
 		  CAN_RX_Flag=0;
-
+		  UART_Tx_async_flag=1;
 		  //print out received CAN message
-		  if(RxHeader.DLC==4){
-		  switch (RxData[1]) {
-
-		  case REG_MOTOR_TORQUE_GAUGE_VOLTAGE_LO:
-
-			  i16_Gauge_Voltage=RxData[3];
-
-			  break;
-
-		  case REG_MOTOR_STATUS_SPEED:
-
-			  MS.Speed=RxData[3];
-
-
-			  break;
-
-		  case REG_MOTOR_STATUS_POWER_METER:
-
-			  MS.Power=RxData[3];
-
-			  break;
-
-		  case REG_MOTOR_ASSIST_LEVEL:
-
-			  i16_Current_Target=RxData[3];
-
-			  break;
-
-		  }//end switch
-		  }//end if DLC=4
-		  if(UART_TX_Flag){
-			 UART_TX_Flag=0;
-
-#if (DISPLAY_TYPE == DISPLAY_TYPE_DEBUG)
-		  if(!UART_RX_Buffer[0]){
-
-			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, \r\n", i16_Gauge_Voltage, MS.Speed, MS.Power, i16_Current_Target);
-			  i=0;
-			  while (UART_TX_Buffer[i] != '\0')
-			  {i++;}
-
-
-			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
-		  	  }
-		  else if(RxData[1]==9){
-			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d\r\n", (int16_t) RxHeader.StdId, (int16_t) RxHeader.IDE, (int16_t) RxHeader.DLC, RxData[0],RxData[1],RxData[2],RxData[3]);
-
-			  i=0;
-			  while (UART_TX_Buffer[i] != '\0')
-			  {i++;}
-
-
-			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
-		  }
-		  else {
-			  switch (Buffer_Counter) {
-
-			  		  case 0:
-			  			CAN_Buffer[0][Buffer_Counter]=RxHeader.StdId;
-			  			CAN_Buffer[1][Buffer_Counter]=RxHeader.IDE;
-			  			CAN_Buffer[2][Buffer_Counter]=RxHeader.DLC;
-			  			CAN_Buffer[3][Buffer_Counter]=RxData[0];
-			  			CAN_Buffer[4][Buffer_Counter]=RxData[1];
-			  			CAN_Buffer[5][Buffer_Counter]=RxData[2];
-			  			CAN_Buffer[6][Buffer_Counter]=RxData[3];
-			  			Buffer_Counter = 1;
-			  			UART_TX_Flag =1;
-			  		  break;
-
-			  		  case 1:
-			  			CAN_Buffer[0][Buffer_Counter]=RxHeader.StdId;
-			  			CAN_Buffer[1][Buffer_Counter]=RxHeader.IDE;
-			  			CAN_Buffer[2][Buffer_Counter]=RxHeader.DLC;
-			  			CAN_Buffer[3][Buffer_Counter]=RxData[0];
-			  			CAN_Buffer[4][Buffer_Counter]=RxData[1];
-			  			CAN_Buffer[5][Buffer_Counter]=RxData[2];
-			  			CAN_Buffer[6][Buffer_Counter]=RxData[3];
-			  			Buffer_Counter = 0;
 
 
 
 
 
-			  sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d,\r\n%d, %d, %d, %d, %d, %d, %d\r\n",
-					  CAN_Buffer[0][0],
-					  CAN_Buffer[1][0],
-					  CAN_Buffer[2][0],
-					  CAN_Buffer[3][0],
-					  CAN_Buffer[4][0],
-					  CAN_Buffer[5][0],
-					  CAN_Buffer[6][0],
-					  CAN_Buffer[0][1],
-					  CAN_Buffer[1][1],
-					  CAN_Buffer[2][1],
-					  CAN_Buffer[3][1],
-					  CAN_Buffer[4][1],
-					  CAN_Buffer[5][1],
-					  CAN_Buffer[6][1]);
+			  if( UART_TX_Flag){//wait for tx finished)
+
+				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
+						  	  	  	  (uint16_t)RxHeader.StdId,
+									  (uint16_t)RxHeader.IDE,
+									  (uint16_t)RxHeader.DLC,
+						  			  RxData[0],
+									  RxData[1],
+									  RxData[2],
+									  RxData[3],
+									  RxData[4],
+									  RxData[5],
+									  RxData[6],
+									  RxData[7]
 
 
-			    i=0;
-			  while (UART_TX_Buffer[i] != '\0')
-			  {i++;}
+				  			  			  );
 
 
-			  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
-			  break;
-			  }//end switch Buffer_Counter
-/*
+				  			  			HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, UART_Tx_lenght);
+				  			  			UART_TX_Flag=0;
 
-			  */
-		  } //end else
-#endif
+			  }
 
 
-			  }//End if UART Tx
+
+
+
 		  }//End CAN Rx
 
 
@@ -421,11 +334,11 @@ static void MX_CAN_Init(void)
 
   /* USER CODE END CAN_Init 1 */
   hcan.Instance = CAN1;
-  hcan.Init.Prescaler = 16;
+  hcan.Init.Prescaler = 9;
   hcan.Init.Mode = CAN_MODE_NORMAL;
   hcan.Init.SyncJumpWidth = CAN_SJW_4TQ;
-  hcan.Init.TimeSeg1 = CAN_BS1_12TQ;
-  hcan.Init.TimeSeg2 = CAN_BS2_5TQ;
+  hcan.Init.TimeSeg1 = CAN_BS1_13TQ;
+  hcan.Init.TimeSeg2 = CAN_BS2_2TQ;
   hcan.Init.TimeTriggeredMode = DISABLE;
   hcan.Init.AutoBusOff = DISABLE;
   hcan.Init.AutoWakeUp = DISABLE;
@@ -551,7 +464,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 256000;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
