@@ -188,16 +188,11 @@ int main(void)
 		  if(UART_TX_Flag){
 			 UART_TX_Flag=0;
 
+			 UART_Tx_lenght=sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %d, %d, %d\r\n",UART_RX_Buffer[0],UART_RX_Buffer[1], UART_RX_Buffer[2], UART_RX_Buffer[3]);
 
+		  	  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, UART_Tx_lenght);
 
-		  	sprintf(UART_TX_Buffer, "Empfangenes UART Byte %d, %d, %d, %d\r\n",UART_RX_Buffer[0],UART_RX_Buffer[1], UART_RX_Buffer[2], UART_RX_Buffer[3]);
-
-		  	  	  i=0;
-		  	  	  while (UART_TX_Buffer[i] != '\0')
-		  	  	  {i++;}
-
-
-		  	  	HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, i);
+		  	  Send_CAN_Command(UART_RX_Buffer[0], UART_RX_Buffer[1]<<8|UART_RX_Buffer[2]);
 
 		  }
 
@@ -393,11 +388,11 @@ static void MX_CAN_Init(void)
     }
 
     /*##-5- Configure Transmission process #####################################*/
-    TxHeader.StdId = ID_MOTOR;
-    TxHeader.ExtId = 0x01;
+    TxHeader.StdId = 0x00;
+    TxHeader.ExtId = 0x04;
     TxHeader.RTR = CAN_RTR_DATA;
     TxHeader.IDE = CAN_ID_STD;
-    TxHeader.DLC = 4;
+    TxHeader.DLC = 8;
     TxHeader.TransmitGlobalTime = DISABLE;
   /* USER CODE END CAN_Init 2 */
 
@@ -664,12 +659,40 @@ void Send_CAN_Request(uint8_t command){
 }
 
 void Send_CAN_Command(uint8_t function, uint16_t value){
-	TxHeader.StdId=ID_MOTOR;
-	TxHeader.DLC=4;
-	TxData[0] = 0;
-	TxData[1] = function;
-	TxData[2] = (value>>8) & 0xff;
-	TxData[3] = value & 0xff;
+	TxHeader.StdId=0;
+	TxHeader.ExtId=4;
+	TxHeader.DLC=8;
+	TxData[0] = function;
+
+	switch (function) {
+
+	case 0: //Geschwindigkeit in Byte 3. ist das nur das LSB?!
+
+
+		TxData[1] = 0;
+		TxData[2] = 0;
+		TxData[3] = value & 0xff;
+		TxData[4] = (value>>8) & 0xff;
+		TxData[5] = 0;
+		TxData[6] = 0;
+		TxData[7] = 0;
+
+		break;
+
+	case 221: //Batteriestand in Byte 6?!
+
+		TxData[1] = 0;
+		TxData[2] = 3;
+		TxData[3] = 1;
+		TxData[4] = 146;
+		TxData[5] = 8;
+		TxData[6] = value;
+		TxData[7] = 0;
+
+		break;
+
+
+	}
 
 	// Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive
 	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
