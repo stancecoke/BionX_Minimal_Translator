@@ -213,7 +213,7 @@ int main(void)
 
 
 
-		  if (ui16_slow_loop_counter>10){
+		  if (ui16_slow_loop_counter>48){
 
 			  ui16_slow_loop_counter=0;
 			  switch (k){
@@ -224,27 +224,22 @@ int main(void)
 				  break;
 
 			  case 1:
-				  Send_CAN_Command(9,0);
+				  Send_CAN_Command(69,0);
 				  k++;
 				  break;
 
 			  case 2:
-				  Send_CAN_Command(68,0);
-				  k++;
-				  break;
-
-			  case 3:
-				  Send_CAN_Command(13,0);
-				  k++;
-				  break;
-
-			  case 4:
 				  Send_CAN_Command(230,0);
 				  k++;
 				  break;
 
-			  case 5:
-				  Send_CAN_Command(230,95);
+			  case 3:
+				  Send_CAN_Command(0,0);
+				  k++;
+				  break;
+
+			  case 4:
+				  Send_CAN_Command(9,0);
 				  k=0;
 				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 				  break;
@@ -704,8 +699,8 @@ void Send_CAN_Command(uint8_t function, uint16_t value){
 
 		TxData[1] = 0;
 		TxData[2] = 0;
-		TxData[3] = 33;
-		TxData[4] = 1;
+		TxData[3] = 0;
+		TxData[4] = 0;
 		TxData[5] = 0;
 		TxData[6] = 0;
 		TxData[7] = 0;
@@ -740,11 +735,11 @@ void Send_CAN_Command(uint8_t function, uint16_t value){
 		break;
 		//68, 23, 0, 42, 0, 0, 0, 0: Byte 0 ist LowByte von ODO Byte 1 ist HiByte von ODO, Byte 3 ist LowByte von Trip, ODO und Trip in 0,1km
 
-	case 68:
+	case 69:
 
 		TxData[1] = 23;
 		TxData[2] = 0;
-		TxData[3] = 42;
+		TxData[3] = 43;
 		TxData[4] = 0;
 		TxData[5] = 0;
 		TxData[6] = 0;
