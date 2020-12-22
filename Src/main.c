@@ -216,6 +216,39 @@ int main(void)
 		  if (ui16_slow_loop_counter>10){
 
 			  ui16_slow_loop_counter=0;
+			  switch (k){
+
+			  case 0:
+				  Send_CAN_Command(0,0);
+				  k++;
+				  break;
+
+			  case 1:
+				  Send_CAN_Command(9,0);
+				  k++;
+				  break;
+
+			  case 2:
+				  Send_CAN_Command(68,0);
+				  k++;
+				  break;
+
+			  case 3:
+				  Send_CAN_Command(13,0);
+				  k++;
+				  break;
+
+			  case 4:
+				  Send_CAN_Command(230,0);
+				  k++;
+				  break;
+
+			  case 5:
+				  Send_CAN_Command(230,95);
+				  k=0;
+				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+				  break;
+			  }
 
 
 		  }//end slow loop
@@ -671,26 +704,80 @@ void Send_CAN_Command(uint8_t function, uint16_t value){
 
 		TxData[1] = 0;
 		TxData[2] = 0;
-		TxData[3] = value & 0xff;
-		TxData[4] = (value>>8) & 0xff;
+		TxData[3] = 33;
+		TxData[4] = 1;
 		TxData[5] = 0;
 		TxData[6] = 0;
 		TxData[7] = 0;
 
 		break;
 
-	case 221: //Batteriestand in Byte 6?!
-
+	case 230: //Batteriestand in Byte 6?!
+		//230, 0, 230, 1, 146, 8, 160, 0
+		//230, 0, 230, 1, 146, 8, 160, 0
 		TxData[1] = 0;
-		TxData[2] = 3;
+		TxData[2] = 230;
 		TxData[3] = 1;
 		TxData[4] = 146;
 		TxData[5] = 8;
-		TxData[6] = value;
+		TxData[6] = 160;
 		TxData[7] = 0;
 
 		break;
 
+		//13, 0, 0, 0, 0, 0, 64, 0
+
+	case 13:
+
+		TxData[1] = 0;
+		TxData[2] = 0;
+		TxData[3] = 33;
+		TxData[4] = 1;
+		TxData[5] = 0;
+		TxData[6] = 64;
+		TxData[7] = 0;
+
+		break;
+		//68, 23, 0, 42, 0, 0, 0, 0: Byte 0 ist LowByte von ODO Byte 1 ist HiByte von ODO, Byte 3 ist LowByte von Trip, ODO und Trip in 0,1km
+
+	case 68:
+
+		TxData[1] = 23;
+		TxData[2] = 0;
+		TxData[3] = 42;
+		TxData[4] = 0;
+		TxData[5] = 0;
+		TxData[6] = 0;
+		TxData[7] = 0;
+
+		break;
+
+		//9, 0, 0, 9, 1, 0, 0, 0 Byte3 und 4 Radumfang?!
+
+	case 9:
+
+		TxData[1] = 0;
+		TxData[2] = 0;
+		TxData[3] = 9;
+		TxData[4] = 1;
+		TxData[5] = 0;
+		TxData[6] = 0;
+		TxData[7] = 0;
+
+		break;
+
+		//1, 0, 1, 0, 13, 0, 50, 178
+	case 1:
+
+		TxData[1] = 0;
+		TxData[2] = 1;
+		TxData[3] = 0;
+		TxData[4] = 13;
+		TxData[5] = 0;
+		TxData[6] = 50;
+		TxData[7] = 178;
+
+		break;
 
 	}
 
