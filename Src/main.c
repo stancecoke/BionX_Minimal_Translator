@@ -70,6 +70,7 @@ uint8_t CAN_RX_Flag=0;
 uint8_t CAN_TX_Flag=0;
 uint8_t Timer3_Flag=0;
 uint8_t ADC_Flag=0;
+uint8_t DIS_Flag=0;
 uint8_t UART_Tx_lenght=0;
 uint8_t UART_Tx_async_flag=0;
 uint8_t UART_Tx_counter=0;
@@ -213,8 +214,9 @@ int main(void)
 
 
 
-		  if (ui16_slow_loop_counter>48 && UART_RX_Buffer[1]){
-
+		  if (ui16_slow_loop_counter>48 && UART_RX_Buffer[1] && DIS_Flag){
+			  DIS_Flag++;
+			  if(DIS_Flag>2)DIS_Flag=0;
 			  ui16_slow_loop_counter=0;
 			  switch (k){
 
@@ -280,10 +282,7 @@ int main(void)
 		  CAN_RX_Flag=0;
 		  UART_Tx_async_flag=1;
 		  //print out received CAN message
-
-
-
-
+		  if(RxHeader.ExtId==DIS_ASSIST)DIS_Flag=1;
 
 			  if( UART_TX_Flag && UART_RX_Buffer[0]){//wait for tx finished)
 
