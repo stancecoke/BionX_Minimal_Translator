@@ -102,7 +102,7 @@ static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
 
 void Send_CAN_Request(uint8_t command);
-void Send_CAN_Command(uint8_t function, uint16_t value);
+void Send_CAN_Command(uint16_t function, uint16_t value);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -219,45 +219,45 @@ int main(void)
 			  switch (k){
 
 			  case 0:
-				  Send_CAN_Command(0,0);
+				  Send_CAN_Command(CON_SPEED, 281);
 				  k++;
 				  break;
 
 			  case 1:
-				  Send_CAN_Command(128,0);
+				  Send_CAN_Command(CON_WHEEL_CIRCUMFERENCE,0);
 				  k++;
 				  break;
 
 			  case 2:
-				  Send_CAN_Command(0,0);
+				  Send_CAN_Command(CON_SPEED, 281);
 				  k++;
 				  break;
 
 			  case 3:
-				  Send_CAN_Command(69,0);
+				  Send_CAN_Command(CON_ODO,0);
 				  k++;
 				  break;
 
 			  case 4:
-				  Send_CAN_Command(0,0);
+				  Send_CAN_Command(CON_UNKOWN_1,0);
 				  k++;
 				  break;
 
 			  case 5:
-				  Send_CAN_Command(120,0);
+				  Send_CAN_Command(CON_SPEED, 281);
 				  k++;
 				  break;
 
 			  case 6:
-				  Send_CAN_Command(128,0);
+				  Send_CAN_Command(CON_WHEEL_CIRCUMFERENCE,0);
 				  k++;
 				  break;
 			  case 7:
-				  Send_CAN_Command(0,0);
+				  Send_CAN_Command(CON_SPEED, 281);
 				  k++;
 				  break;
 			  case 8:
-				  Send_CAN_Command(9,0);
+				  Send_CAN_Command(CON_ODO,0);
 				  k=0;
 				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 				  break;
@@ -692,7 +692,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 
 void Send_CAN_Request(uint8_t command){
 
-	TxHeader.StdId=ID_MOTOR;
+	TxHeader.StdId=0;
 	TxHeader.DLC=2;
 	TxData[0] = 0;
 	TxData[1] = command;
@@ -706,37 +706,40 @@ void Send_CAN_Request(uint8_t command){
 
 }
 
-void Send_CAN_Command(uint8_t function, uint16_t value){
+void Send_CAN_Command(uint16_t function, uint16_t value){
 	TxHeader.StdId=0;
-	TxHeader.ExtId=4;
+
 	TxHeader.IDE=4;
 	TxHeader.DLC=8;
-	TxData[0] = function;
+
 
 	switch (function) {
 
-	case 0: //Geschwindigkeit in Byte 3. ist das nur das LSB?!
+	case CON_SPEED: //Geschwindigkeit in Byte 3. ist das nur das LSB?!
 
-
+		TxHeader.ExtId=function;
+		TxData[0] = 0;
 		TxData[1] = 0;
 		TxData[2] = 0;
-		TxData[3] = 0;
-		TxData[4] = 0;
+		TxData[3] = value & 0xFF;
+		TxData[4] = value>>8;
 		TxData[5] = 0;
 		TxData[6] = 0;
 		TxData[7] = 0;
 
 		break;
 
-	case 230: //Batteriestand in Byte 6?!
+	case CON_UNKOWN_1: //Batteriestand in Byte 6?!
 		//230, 0, 230, 1, 146, 8, 160, 0
 		//230, 0, 230, 1, 146, 8, 160, 0
+		TxHeader.ExtId=function;
+		TxData[0] = 230;
 		TxData[1] = 0;
 		TxData[2] = 230;
 		TxData[3] = 1;
 		TxData[4] = 146;
 		TxData[5] = 8;
-		TxData[6] = 160;
+		TxData[6] = 64;
 		TxData[7] = 0;
 
 		break;
@@ -770,11 +773,13 @@ void Send_CAN_Command(uint8_t function, uint16_t value){
 		break;
 		//68, 23, 0, 42, 0, 0, 0, 0: Byte 0 ist LowByte von ODO Byte 1 ist HiByte von ODO, Byte 3 ist LowByte von Trip, ODO und Trip in 0,1km
 
-	case 69:
+	case CON_ODO:
 
+		TxHeader.ExtId=function;
+		TxData[0] = 70;
 		TxData[1] = 23;
 		TxData[2] = 0;
-		TxData[3] = 43;
+		TxData[3] = 44;
 		TxData[4] = 0;
 		TxData[5] = 0;
 		TxData[6] = 0;
@@ -784,8 +789,10 @@ void Send_CAN_Command(uint8_t function, uint16_t value){
 
 		//9, 0, 0, 9, 1, 0, 0, 0 Byte3 und 4 Radumfang?!
 
-	case 9:
+	case CON_WHEEL_CIRCUMFERENCE:
 
+		TxHeader.ExtId=function;
+		TxData[0] = 9;
 		TxData[1] = 0;
 		TxData[2] = 0;
 		TxData[3] = 9;
@@ -812,10 +819,10 @@ void Send_CAN_Command(uint8_t function, uint16_t value){
 	}
 
 	// Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive
-//	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
 	  {
 	   // Transmission request Error
-//	   Error_Handler();
+	   Error_Handler();
 	  }
 
 }
