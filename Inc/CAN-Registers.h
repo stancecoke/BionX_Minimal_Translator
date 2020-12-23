@@ -8,7 +8,7 @@
 #define CON_SPEED2 751L 		//? Speed x 10, Byte3 LSB, Byte4 MSB, Byte2 Error ?!
 #define CON_ODO	1263L 		//Byte0 ODO LSB, Byte1 ODO MSB, Byte3 Trip LSB, Byte4 Trip MSB, Byte 6 ?! Zählt runter
 #define CON_UNKOWN_1 1519L 	//??? 230 ... Byte6 springt in Einschaltprozedur von 160 auf 64 Rest bleibt immer gleich
-#define CON_STARTUP 1775L	//wird nur beim Start gesendet, Inhalt bleibt immer gleich
+#define DIS_STARTUP 1775L	//wird nur beim Start gesendet, Inhalt bleibt immer gleich
 #define CON_WHEEL_CIRCUMFERENCE 2031L //Byte 3 LSB, Byte 4 MSB, ?!
 #define CON_STARTUP 62703L	//Wird nur beim Ein- und Ausschalten gesendet. Beim Starten ist Byte0 1, beim Abschalten ist Byte0 2
 
