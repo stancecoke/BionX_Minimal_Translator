@@ -192,7 +192,7 @@ int main(void)
 
 		  	  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, UART_Tx_lenght);
 
-		  	  Send_CAN_Command(UART_RX_Buffer[0], UART_RX_Buffer[1]<<8|UART_RX_Buffer[2]);
+
 
 		  }
 
@@ -213,7 +213,7 @@ int main(void)
 
 
 
-		  if (ui16_slow_loop_counter>48){
+		  if (ui16_slow_loop_counter>48 && UART_RX_Buffer[1]){
 
 			  ui16_slow_loop_counter=0;
 			  switch (k){
@@ -253,7 +253,7 @@ int main(void)
 				  k++;
 				  break;
 			  case 7:
-				  Send_CAN_Command(CON_SPEED, 281);
+				  Send_CAN_Command(CON_ALIVE, 281);
 				  k++;
 				  break;
 			  case 8:
@@ -279,7 +279,7 @@ int main(void)
 
 
 
-			  if( UART_TX_Flag){//wait for tx finished)
+			  if( UART_TX_Flag && UART_RX_Buffer[0]){//wait for tx finished)
 
 				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
 						  	  	  	  (uint16_t)RxHeader.StdId,
@@ -746,8 +746,9 @@ void Send_CAN_Command(uint16_t function, uint16_t value){
 
 		//128, 0, 64, 0, 1, 0, 108, 0
 
-	case 128:
-
+	case CON_ALIVE:
+		TxHeader.ExtId=function;
+		TxData[0] = 128;
 		TxData[1] = 0;
 		TxData[2] = 64;
 		TxData[3] = 0;
