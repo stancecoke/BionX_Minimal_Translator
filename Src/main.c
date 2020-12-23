@@ -224,21 +224,39 @@ int main(void)
 				  break;
 
 			  case 1:
-				  Send_CAN_Command(69,0);
+				  Send_CAN_Command(128,0);
 				  k++;
 				  break;
 
 			  case 2:
-				  Send_CAN_Command(230,0);
-				  k++;
-				  break;
-
-			  case 3:
 				  Send_CAN_Command(0,0);
 				  k++;
 				  break;
 
+			  case 3:
+				  Send_CAN_Command(69,0);
+				  k++;
+				  break;
+
 			  case 4:
+				  Send_CAN_Command(0,0);
+				  k++;
+				  break;
+
+			  case 5:
+				  Send_CAN_Command(120,0);
+				  k++;
+				  break;
+
+			  case 6:
+				  Send_CAN_Command(128,0);
+				  k++;
+				  break;
+			  case 7:
+				  Send_CAN_Command(0,0);
+				  k++;
+				  break;
+			  case 8:
 				  Send_CAN_Command(9,0);
 				  k=0;
 				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
@@ -263,9 +281,11 @@ int main(void)
 
 			  if( UART_TX_Flag){//wait for tx finished)
 
-				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
+				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
 						  	  	  	  (uint16_t)RxHeader.StdId,
+									  (uint16_t)RxHeader.ExtId,
 									  (uint16_t)RxHeader.IDE,
+									  (uint16_t)RxHeader.RTR,
 									  (uint16_t)RxHeader.DLC,
 						  			  RxData[0],
 									  RxData[1],
@@ -689,6 +709,7 @@ void Send_CAN_Request(uint8_t command){
 void Send_CAN_Command(uint8_t function, uint16_t value){
 	TxHeader.StdId=0;
 	TxHeader.ExtId=4;
+	TxHeader.IDE=4;
 	TxHeader.DLC=8;
 	TxData[0] = function;
 
@@ -716,6 +737,20 @@ void Send_CAN_Command(uint8_t function, uint16_t value){
 		TxData[4] = 146;
 		TxData[5] = 8;
 		TxData[6] = 160;
+		TxData[7] = 0;
+
+		break;
+
+		//128, 0, 64, 0, 1, 0, 108, 0
+
+	case 128:
+
+		TxData[1] = 0;
+		TxData[2] = 64;
+		TxData[3] = 0;
+		TxData[4] = 1;
+		TxData[5] = 0;
+		TxData[6] = 108;
 		TxData[7] = 0;
 
 		break;
@@ -777,10 +812,10 @@ void Send_CAN_Command(uint8_t function, uint16_t value){
 	}
 
 	// Start the Transmission process, zwei mal senden wie im Beispiel https://github.com/jliegner/bionxdrive
-	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
+//	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK)
 	  {
 	   // Transmission request Error
-	   Error_Handler();
+//	   Error_Handler();
 	  }
 
 }
