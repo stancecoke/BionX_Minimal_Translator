@@ -219,7 +219,7 @@ int main(void)
 			  switch (k){
 
 			  case 0:
-				  Send_CAN_Command(CON_SPEED, 281);
+				  Send_CAN_Command(CON_SPEED1, 281);
 				  k++;
 				  break;
 
@@ -229,7 +229,7 @@ int main(void)
 				  break;
 
 			  case 2:
-				  Send_CAN_Command(CON_SPEED, 281);
+				  Send_CAN_Command(CON_SPEED2, 281);
 				  k++;
 				  break;
 
@@ -244,7 +244,7 @@ int main(void)
 				  break;
 
 			  case 5:
-				  Send_CAN_Command(CON_SPEED, 281);
+				  Send_CAN_Command(CON_SPEED1, 281);
 				  k++;
 				  break;
 
@@ -256,7 +256,13 @@ int main(void)
 				  Send_CAN_Command(CON_ALIVE, 281);
 				  k++;
 				  break;
+
 			  case 8:
+				  Send_CAN_Command(CON_SPEED2, 281);
+				  k++;
+				  break;
+
+			  case 9:
 				  Send_CAN_Command(CON_ODO,0);
 				  k=0;
 				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
@@ -715,10 +721,24 @@ void Send_CAN_Command(uint16_t function, uint16_t value){
 
 	switch (function) {
 
-	case CON_SPEED: //Geschwindigkeit in Byte 3. ist das nur das LSB?!
+	case CON_SPEED1: //Geschwindigkeit in Byte 3. ist das nur das LSB?!
 
 		TxHeader.ExtId=function;
 		TxData[0] = 0;
+		TxData[1] = 0;
+		TxData[2] = 0;
+		TxData[3] = value & 0xFF;
+		TxData[4] = value>>8;
+		TxData[5] = 0;
+		TxData[6] = 0;
+		TxData[7] = 0;
+
+		break;
+
+	case CON_SPEED2: //Geschwindigkeit in Byte 3. ist das nur das LSB?!
+
+		TxHeader.ExtId=function;
+		TxData[0] = 1;
 		TxData[1] = 0;
 		TxData[2] = 0;
 		TxData[3] = value & 0xFF;
