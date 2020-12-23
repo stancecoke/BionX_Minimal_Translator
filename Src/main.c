@@ -219,22 +219,22 @@ int main(void)
 			  switch (k){
 
 			  case 0:
-				  Send_CAN_Command(CON_SPEED1, 281);
+				  Send_CAN_Command(CON_ALIVE, 0);
 				  k++;
 				  break;
 
 			  case 1:
-				  Send_CAN_Command(CON_WHEEL_CIRCUMFERENCE,0);
+				  Send_CAN_Command(CON_SPEED1,0);
 				  k++;
 				  break;
 
 			  case 2:
-				  Send_CAN_Command(CON_SPEED2, 281);
+				  Send_CAN_Command(CON_ODO, 0);
 				  k++;
 				  break;
 
 			  case 3:
-				  Send_CAN_Command(CON_ODO,0);
+				  Send_CAN_Command(CON_SPEED2,0);
 				  k++;
 				  break;
 
@@ -244,26 +244,26 @@ int main(void)
 				  break;
 
 			  case 5:
-				  Send_CAN_Command(CON_SPEED1, 281);
+				  Send_CAN_Command(CON_ALIVE, 0);
 				  k++;
 				  break;
 
 			  case 6:
-				  Send_CAN_Command(CON_WHEEL_CIRCUMFERENCE,0);
+				  Send_CAN_Command(CON_SPEED1,0);
 				  k++;
 				  break;
 			  case 7:
-				  Send_CAN_Command(CON_ALIVE, 281);
+				  Send_CAN_Command(CON_SPEED2, 0);
 				  k++;
 				  break;
 
 			  case 8:
-				  Send_CAN_Command(CON_SPEED2, 281);
+				  Send_CAN_Command(CON_WHEEL_CIRCUMFERENCE, 0);
 				  k++;
 				  break;
 
 			  case 9:
-				  Send_CAN_Command(CON_ODO,0);
+				  Send_CAN_Command(CON_SPEED2,0);
 				  k=0;
 				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 				  break;
