@@ -82,6 +82,9 @@ int32_t i32_Pedal_Torque_cumulated=0;
 int16_t i16_Current_Target=0;
 uint16_t ui16_slow_loop_counter=0;
 volatile uint16_t adcData[3]; //Buffer for ADC1 Input
+
+int32_t ExtID[500];
+int16_t ExtID_counter=0;
 MotorState_t MS; //struct for motor state
 
 uint8_t               CAN_Buffer[11][8];
@@ -170,7 +173,7 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-  UART_RX_Buffer[0]=2;
+  UART_RX_Buffer[0]=1;
 
 
 
@@ -284,16 +287,16 @@ int main(void)
 
 
 	  if(CAN_RX_Flag){
-		  //DIS_Flag=1; //?!
-		  CAN_RX_Flag=0;
-		  UART_Tx_async_flag=1;
-		  //print out received CAN message
+
+
+		  //UART_Tx_async_flag=1;
+
 		  if(RxHeader.ExtId == DIS_ASSIST){
 			  DIS_Flag=1;
-			  //UART_TX_Flag=0;
+
 		  }
 
-			  if( UART_TX_Flag && UART_RX_Buffer[0]){//wait for tx finished)
+			  if( UART_TX_Flag && UART_RX_Buffer[0] && !UART_RX_Buffer[2]){//print out received CAN message
 
 				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%lu, %lu, %lu, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
 						  	  	  	  RxHeader.StdId,
@@ -319,9 +322,20 @@ int main(void)
 
 			  }
 
+			  else if(UART_TX_Flag && !UART_RX_Buffer[0] && UART_RX_Buffer[2]){//print out Array of ExtID
+
+				  for(i=0; i<500; i++){
+					  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%lu\r\n",ExtID[i]);
+					  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, UART_Tx_lenght);
+					  UART_TX_Flag=0;
+					  while(!UART_TX_Flag);
+				  }
+
+			  }
 
 
 
+			  CAN_RX_Flag=0;
 
 		  }//End CAN Rx
 
@@ -676,7 +690,20 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
     Error_Handler();
   }
 
-  CAN_RX_Flag=1;
+  if(UART_RX_Buffer[2]){ //just collect ExtIds in Array
+	  if(!CAN_RX_Flag){
+	  ExtID[ExtID_counter]=RxHeader.ExtId;
+	  if (ExtID_counter<500){
+		  ExtID_counter++;
+  	  	  }
+	  else {
+		  ExtID_counter=0;
+		  CAN_RX_Flag=1;
+  	  	  }
+	  }
+  }
+  else CAN_RX_Flag=1;
+
 
 }
 
