@@ -64,6 +64,7 @@ uint8_t i=0; //counter for loops
 uint8_t j=0; //counter for autozero at startup
 uint8_t k=0; //counter for CAN_TX
 uint8_t l=0; //delay-counter
+uint8_t ODOByte6=95; //delay-counter
 uint8_t UART_RX_Flag=0;
 uint8_t UART_TX_Flag=1;
 uint8_t CAN_RX_Flag=0;
@@ -811,9 +812,10 @@ void Send_CAN_Command(uint32_t function, uint16_t value){
 		TxData[3] = 44;
 		TxData[4] = 0;
 		TxData[5] = 0;
-		TxData[6] = 0;
+		TxData[6] = ODOByte6;
 		TxData[7] = 0;
 
+		ODOByte6--;
 		break;
 
 		//9, 0, 0, 9, 1, 0, 0, 0 Byte3 und 4 Radumfang?!
