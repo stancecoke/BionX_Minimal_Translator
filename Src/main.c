@@ -103,7 +103,7 @@ static void MX_ADC1_Init(void);
 static void MX_TIM3_Init(void);
 
 void Send_CAN_Request(uint8_t command);
-void Send_CAN_Command(uint16_t function, uint16_t value);
+void Send_CAN_Command(uint32_t function, uint16_t value);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -283,18 +283,21 @@ int main(void)
 
 
 	  if(CAN_RX_Flag){
-		  DIS_Flag=1; //?!
+		  //DIS_Flag=1; //?!
 		  CAN_RX_Flag=0;
 		  UART_Tx_async_flag=1;
 		  //print out received CAN message
-		  if(RxHeader.ExtId==DIS_ASSIST)DIS_Flag=1;
+		  if(RxHeader.ExtId == DIS_ASSIST){
+			  DIS_Flag=1;
+			  //UART_TX_Flag=0;
+		  }
 
 			  if( UART_TX_Flag && UART_RX_Buffer[0]){//wait for tx finished)
 
-				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
-						  	  	  	  (uint16_t)RxHeader.StdId,
-									  (uint16_t)RxHeader.ExtId,
-									  (uint16_t)RxHeader.IDE,
+				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%lu, %lu, %lu, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
+						  	  	  	  RxHeader.StdId,
+									  RxHeader.ExtId,
+									  RxHeader.IDE,
 									  (uint16_t)RxHeader.RTR,
 									  (uint16_t)RxHeader.DLC,
 						  			  RxData[0],
@@ -716,7 +719,7 @@ void Send_CAN_Request(uint8_t command){
 
 }
 
-void Send_CAN_Command(uint16_t function, uint16_t value){
+void Send_CAN_Command(uint32_t function, uint16_t value){
 	TxHeader.StdId=0;
 
 	TxHeader.IDE=4;
@@ -756,10 +759,11 @@ void Send_CAN_Command(uint16_t function, uint16_t value){
 	case CON_UNKOWN_1: //Batteriestand in Byte 6?!
 		//230, 0, 230, 1, 146, 8, 160, 0
 		//230, 0, 230, 1, 146, 8, 160, 0
+		//0, 419300847, 4, 0, 8, 50, 0, 204, 1, 146, 8, 64, 0
 		TxHeader.ExtId=function;
-		TxData[0] = 230;
+		TxData[0] = 50;
 		TxData[1] = 0;
-		TxData[2] = 230;
+		TxData[2] = 204;
 		TxData[3] = 1;
 		TxData[4] = 146;
 		TxData[5] = 8;
