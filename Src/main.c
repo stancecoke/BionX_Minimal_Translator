@@ -217,6 +217,11 @@ int main(void)
 		  if (ui16_slow_loop_counter>48 && UART_RX_Buffer[1] && DIS_Flag){
 			  DIS_Flag++;
 			  if(DIS_Flag>2)DIS_Flag=0;
+			  j++;
+			  if(j>150){
+				  k++;
+				  j=0;
+			  }
 			  ui16_slow_loop_counter=0;
 			  switch (k){
 
@@ -278,7 +283,7 @@ int main(void)
 
 
 	  if(CAN_RX_Flag){
-
+		  DIS_Flag=1; //?!
 		  CAN_RX_Flag=0;
 		  UART_Tx_async_flag=1;
 		  //print out received CAN message
