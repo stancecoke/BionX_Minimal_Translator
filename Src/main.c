@@ -324,10 +324,10 @@ int main(void)
 
 			  else if(UART_TX_Flag && !UART_RX_Buffer[0] && UART_RX_Buffer[2]){//print out Array of ExtID
 
-				  for(i=0; i<500; i++){
-					  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%lu\r\n",ExtID[i]);
-					  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, UART_Tx_lenght);
+				  for(int l=0; l<500; l++){
 					  UART_TX_Flag=0;
+					  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%d, %lu\r\n", l, ExtID[l]);
+					  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, UART_Tx_lenght);
 					  while(!UART_TX_Flag);
 				  }
 
@@ -693,7 +693,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
   if(UART_RX_Buffer[2]){ //just collect ExtIds in Array
 	  if(!CAN_RX_Flag){
 	  ExtID[ExtID_counter]=RxHeader.ExtId;
-	  if (ExtID_counter<500){
+	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	  if (ExtID_counter<495){
 		  ExtID_counter++;
   	  	  }
 	  else {
