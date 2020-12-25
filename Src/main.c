@@ -81,9 +81,10 @@ int16_t i16_Pedal_Torque=0;
 int32_t i32_Pedal_Torque_cumulated=0;
 int16_t i16_Current_Target=0;
 uint16_t ui16_slow_loop_counter=0;
+uint16_t timeCounter=0;
 volatile uint16_t adcData[3]; //Buffer for ADC1 Input
 
-int32_t ExtID[500];
+int32_t ExtID[500][2];
 int16_t ExtID_counter=0;
 MotorState_t MS; //struct for motor state
 
@@ -212,7 +213,7 @@ int main(void)
 
 	  //Timer 3 running with 1kHz ISR frequency
 	  if(Timer3_Flag){
-
+		  timeCounter++;
 		  Timer3_Flag=0;
 		  ui16_slow_loop_counter++;
 
@@ -326,7 +327,7 @@ int main(void)
 
 				  for(int l=0; l<500; l++){
 					  UART_TX_Flag=0;
-					  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%d, %lu\r\n", l, ExtID[l]);
+					  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%d, %d, %lu\r\n", l, (uint16_t)ExtID[l][0], ExtID[l][1]);
 					  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, UART_Tx_lenght);
 					  while(!UART_TX_Flag);
 				  }
@@ -692,7 +693,9 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
 
   if(UART_RX_Buffer[2]){ //just collect ExtIds in Array
 	  if(!CAN_RX_Flag){
-	  ExtID[ExtID_counter]=RxHeader.ExtId;
+	  ExtID[ExtID_counter][1]=RxHeader.ExtId;
+	  ExtID[ExtID_counter][0]=timeCounter;
+	  timeCounter=0;
 	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 	  if (ExtID_counter<495){
 		  ExtID_counter++;
