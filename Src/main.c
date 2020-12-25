@@ -219,58 +219,59 @@ int main(void)
 
 
 
-		  if (ui16_slow_loop_counter>48 && UART_RX_Buffer[1] && DIS_Flag){
-			  DIS_Flag++;
-			  if(DIS_Flag>2)DIS_Flag=0;
-			  j++;
-			  if(j>150){
-				  k++;
-				  j=0;
-			  }
+		  if (ui16_slow_loop_counter>100 && UART_RX_Buffer[1]){
+
 			  ui16_slow_loop_counter=0;
 			  switch (k){
 
 			  case 0:
-				  Send_CAN_Command(CON_ALIVE, 0);
+				  Send_CAN_Command(CON_WHEEL_CIRCUMFERENCE, 0);
+				  Send_CAN_Command(CON_SPEED2, 0);
 				  k++;
 				  break;
 
 			  case 1:
-				  Send_CAN_Command(CON_SPEED1,0);
-				  k++;
-				  break;
-
-			  case 2:
-				  Send_CAN_Command(CON_ODO, 0);
-				  k++;
-				  break;
-
-			  case 3:
 				  Send_CAN_Command(CON_SPEED2,0);
 				  k++;
 				  break;
 
+			  case 2:
+				  Send_CAN_Command(CON_ALIVE, 0);
+				  Send_CAN_Command(CON_SPEED2, 0);
+				  k++;
+				  break;
+
+			  case 3:
+				  Send_CAN_Command(CON_SPEED1,0);
+				  Send_CAN_Command(CON_SPEED2, 0);
+				  k++;
+				  break;
+
 			  case 4:
-				  Send_CAN_Command(CON_UNKOWN_1,0);
+				  Send_CAN_Command(CON_ODO,0);
+				  Send_CAN_Command(CON_SPEED2, 0);
 				  k++;
 				  break;
 
 			  case 5:
-				  Send_CAN_Command(CON_ALIVE, 0);
+				  Send_CAN_Command(CON_SPEED2, 0);
 				  k++;
 				  break;
 
 			  case 6:
-				  Send_CAN_Command(CON_SPEED1,0);
+				  Send_CAN_Command(CON_UNKOWN_1,0);
+				  Send_CAN_Command(CON_SPEED2, 0);
 				  k++;
 				  break;
 			  case 7:
+				  Send_CAN_Command(CON_ALIVE, 0);
 				  Send_CAN_Command(CON_SPEED2, 0);
 				  k++;
 				  break;
 
 			  case 8:
-				  Send_CAN_Command(CON_WHEEL_CIRCUMFERENCE, 0);
+				  Send_CAN_Command(CON_SPEED1, 0);
+				  Send_CAN_Command(CON_SPEED2, 0);
 				  k++;
 				  break;
 
