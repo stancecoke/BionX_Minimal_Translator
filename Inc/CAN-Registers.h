@@ -6,7 +6,7 @@
 #define DIS_ASSIST 419234344LL		// Byte0 ist die Unterstützungsstufe, wird erst nach der Einschaltprozedur gesendet
 #define CON_SPEED2 419300079LL 		//? Speed x 10, Byte3 LSB, Byte4 MSB, Byte0 Assist Level, Byte2 Error ?!
 #define CON_SPEED1 419300335LL 		//? Speed x 10, Byte3 LSB, Byte4 MSB, Byte2 Error ?!
-#define CON_ODO	419300591LL 		//Byte0 ODO LSB, Byte1 ODO MSB, Byte3 Trip LSB, Byte4 Trip MSB, Byte 6 ?! Zählt runter
+#define CON_ODO	419300591LL 		//Byte0 ODO LSB, Byte1 ODO MSB, Byte3 Trip LSB, Byte4 Trip MSB, Byte 6 Restreichweite in km
 #define CON_UNKOWN_1 419300847LL 	//??? 230 ... Byte6 springt in Einschaltprozedur von 160 auf 64 Rest bleibt immer gleich
 #define DIS_STARTUP 419301103LL	//wird nur beim Start gesendet, Inhalt bleibt immer gleich
 #define CON_WHEEL_CIRCUMFERENCE 419301359LL //Byte 3 LSB, Byte 4 MSB, ?!
