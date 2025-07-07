@@ -1,3 +1,4 @@
+
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
@@ -87,6 +88,7 @@ volatile uint16_t adcData[3]; //Buffer for ADC1 Input
 int32_t ExtID[500][2];
 int16_t ExtID_counter=0;
 MotorState_t MS; //struct for motor state
+FrameID_t frameID;
 
 uint8_t               CAN_Buffer[11][8];
 uint8_t               Buffer_Counter=0;
@@ -299,11 +301,20 @@ int main(void)
 		  }
 
 			  if( UART_TX_Flag && UART_RX_Buffer[0] && !UART_RX_Buffer[2]){//print out received CAN message
-
-				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%lu, %lu, %lu, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
+				  frameID.subcommand = RxHeader.ExtId&0xFF;
+				  frameID.command = (RxHeader.ExtId>>8)&0xFF;
+				  frameID.operation = (RxHeader.ExtId>>16)&0x07;
+				  frameID.target = (RxHeader.ExtId>>19)&0x1F;
+				  frameID.source = (RxHeader.ExtId>>24)&0x1F;
+				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%lu, %lu, %lu, %02x, %02x, %02x, %02x, %02x, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
 						  	  	  	  RxHeader.StdId,
 									  RxHeader.ExtId,
 									  RxHeader.IDE,
+									  frameID.subcommand,
+									  frameID.command,
+									  frameID.operation,
+									  frameID.target,
+									  frameID.source,
 									  (uint16_t)RxHeader.RTR,
 									  (uint16_t)RxHeader.DLC,
 						  			  RxData[0],
@@ -685,7 +696,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
 {
   /* Get RX message */
-	//HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+	HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
   if (HAL_CAN_GetRxMessage(CanHandle, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK)
   {
     /* Reception Error */

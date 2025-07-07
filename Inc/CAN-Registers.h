@@ -11,8 +11,16 @@
 #define DIS_STARTUP 419301103LL	//wird nur beim Start gesendet, Inhalt bleibt immer gleich
 #define CON_WHEEL_CIRCUMFERENCE 419301359LL //Byte 3 LSB, Byte 4 MSB, ?!
 #define CON_STARTUP 403895535LL	//Wird nur beim Ein- und Ausschalten gesendet. Beim Starten ist Byte0 1, beim Abschalten ist Byte0 2
+typedef struct
+{
 
+	uint8_t       	subcommand;
+	uint8_t       	command;
+	uint8_t         operation;
+	uint8_t 		target;
+	uint8_t 		source;
 
+}FrameID_t;
 #endif
 
 /*
