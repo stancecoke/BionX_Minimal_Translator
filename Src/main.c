@@ -306,32 +306,48 @@ int main(void)
 				  frameID.operation = (RxHeader.ExtId>>16)&0x07;
 				  frameID.target = (RxHeader.ExtId>>19)&0x1F;
 				  frameID.source = (RxHeader.ExtId>>24)&0x1F;
-				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%lu, %lu, %lu, %02x, %02x, %02x, %02x, %02x, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
-						  	  	  	  RxHeader.StdId,
-									  RxHeader.ExtId,
-									  RxHeader.IDE,
-									  frameID.subcommand,
-									  frameID.command,
-									  frameID.operation,
-									  frameID.target,
-									  frameID.source,
-									  (uint16_t)RxHeader.RTR,
-									  (uint16_t)RxHeader.DLC,
-						  			  RxData[0],
-									  RxData[1],
-									  RxData[2],
-									  RxData[3],
-									  RxData[4],
-									  RxData[5],
-									  RxData[6],
-									  RxData[7]
+//				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%lu, %08x, %lu, %02x, %02x, %02x, %02x, %02x, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
+//						  	  	  	  RxHeader.StdId,
+//									  RxHeader.ExtId,
+//									  RxHeader.IDE,
+//									  frameID.subcommand,
+//									  frameID.command,
+//									  frameID.operation,
+//									  frameID.target,
+//									  frameID.source,
+//									  (uint16_t)RxHeader.RTR,
+//									  (uint16_t)RxHeader.DLC,
+//						  			  RxData[0],
+//									  RxData[1],
+//									  RxData[2],
+//									  RxData[3],
+//									  RxData[4],
+//									  RxData[5],
+//									  RxData[6],
+//									  RxData[7]
+//
+//
+//				  			  			  );
 
+				  UART_TX_Buffer[0]=frameID.source;
+				  UART_TX_Buffer[1]=frameID.target;
+				  UART_TX_Buffer[2]=frameID.operation;
+				  UART_TX_Buffer[3]=(uint8_t)RxHeader.DLC;
+				  UART_TX_Buffer[4]=frameID.command;
+				  UART_TX_Buffer[5]=frameID.subcommand;
 
-				  			  			  );
-
-
-				  			  			HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, UART_Tx_lenght);
+				  UART_TX_Buffer[6]= RxData[0];
+				  UART_TX_Buffer[7]= RxData[1];
+				  UART_TX_Buffer[8]= RxData[2];
+				  UART_TX_Buffer[9]= RxData[3];
+				  UART_TX_Buffer[10]= RxData[4];
+				  UART_TX_Buffer[11]= RxData[5];
+				  UART_TX_Buffer[12]= RxData[6];
+				  UART_TX_Buffer[13]= RxData[7];
+				  if(frameID.source==0x13&&frameID.operation>3){
+				  			  			HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, 14);
 				  			  			UART_TX_Flag=0;
+				  	  }
 
 			  }
 
