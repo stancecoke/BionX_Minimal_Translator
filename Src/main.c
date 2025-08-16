@@ -219,7 +219,7 @@ int main(void)
 
 
 
-		  if (ui16_slow_loop_counter>100 && UART_RX_Buffer[1]){
+		  if (ui16_slow_loop_counter>100){
 
 			  ui16_slow_loop_counter=0;
 			  switch (k){

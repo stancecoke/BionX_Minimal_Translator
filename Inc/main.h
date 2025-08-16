@@ -58,7 +58,7 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define Onboard_LED_Pin GPIO_PIN_13
+#define Onboard_LED_Pin GPIO_PIN_14
 #define Onboard_LED_GPIO_Port GPIOC
 /* USER CODE BEGIN Private defines */
 #define CAL_BAT_V 1
