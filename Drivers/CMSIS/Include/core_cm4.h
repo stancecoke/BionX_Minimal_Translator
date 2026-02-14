@@ -77,7 +77,7 @@
                                     __CM4_CMSIS_VERSION_SUB           )        /*!< CMSIS HAL version number */
 
 #define __CORTEX_M                (0x04U)                                      /*!< Cortex-M Core */
-
+#define __FPU_PRESENT			  1U
 
 #if   defined ( __CC_ARM )
   #define __ASM            __asm                                      /*!< asm keyword for ARM Compiler */
@@ -151,10 +151,10 @@
       #define __FPU_USED       1U
     #else
       #error "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
-      #define __FPU_USED       0U
+      #define __FPU_USED       1U
     #endif
   #else
-    #define __FPU_USED         0U
+    #define __FPU_USED         1U
   #endif
 
 #elif defined ( __ICCARM__ )

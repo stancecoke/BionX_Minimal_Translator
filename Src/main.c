@@ -36,7 +36,12 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define REMOTE_FRAME   0 /* If = 1 the frame should be a remote frame. If = 0 the frame will be either remote or data frame */
+#define EXTID          1 /* If = 0 the frame should be a frame with standard ID. If = 1 the frame should be a frame with extended ID */
+#define ID    0x00010203  /* The ID value */
+#define MASK  0x1FFFFFFF  /* The mask value */
+#define FILTER_ID    ((ID << 3) | (REMOTE_FRAME<<1) | (EXTID <<2))
+#define FILTER_MASK  ((MASK << 3) | (REMOTE_FRAME<<1) | (EXTID <<2))
 
 /* USER CODE END PD */
 
@@ -222,118 +227,94 @@ int main(void)
 		  if (ui16_slow_loop_counter>100){
 
 			  ui16_slow_loop_counter=0;
-			  switch (k){
+			  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
 
-			  case 0:
-				  Send_CAN_Command(CON_WHEEL_CIRCUMFERENCE, 0);
-				  Send_CAN_Command(CON_SPEED2, 0);
-				  k++;
-				  break;
 
-			  case 1:
-				  Send_CAN_Command(CON_SPEED2,0);
-				  k++;
-				  break;
-
-			  case 2:
-				  Send_CAN_Command(CON_ALIVE, 0);
-				  Send_CAN_Command(CON_SPEED2, 0);
-				  k++;
-				  break;
-
-			  case 3:
-				  Send_CAN_Command(CON_SPEED1,0);
-				  Send_CAN_Command(CON_SPEED2, 0);
-				  k++;
-				  break;
-
-			  case 4:
-				  Send_CAN_Command(CON_ODO,0);
-				  Send_CAN_Command(CON_SPEED2, 0);
-				  k++;
-				  break;
-
-			  case 5:
-				  Send_CAN_Command(CON_SPEED2, 0);
-				  k++;
-				  break;
-
-			  case 6:
-				  Send_CAN_Command(CON_UNKOWN_1,0);
-				  Send_CAN_Command(CON_SPEED2, 0);
-				  k++;
-				  break;
-			  case 7:
-				  Send_CAN_Command(CON_ALIVE, 0);
-				  Send_CAN_Command(CON_SPEED2, 0);
-				  k++;
-				  break;
-
-			  case 8:
-				  Send_CAN_Command(CON_SPEED1, 0);
-				  Send_CAN_Command(CON_SPEED2, 0);
-				  k++;
-				  break;
-
-			  case 9:
-				  Send_CAN_Command(CON_SPEED2,0);
-				  k=0;
-				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
-				  break;
-			  }
+		  }
+//			  switch (k){
+//
+//			  case 0:
+//				  Send_CAN_Command(CON_WHEEL_CIRCUMFERENCE, 0);
+//				  Send_CAN_Command(CON_SPEED2, 0);
+//				  k++;
+//				  break;
+//
+//			  case 1:
+//				  Send_CAN_Command(CON_SPEED2,0);
+//				  k++;
+//				  break;
+//
+//			  case 2:
+//				  Send_CAN_Command(CON_ALIVE, 0);
+//				  Send_CAN_Command(CON_SPEED2, 0);
+//				  k++;
+//				  break;
+//
+//			  case 3:
+//				  Send_CAN_Command(CON_SPEED1,0);
+//				  Send_CAN_Command(CON_SPEED2, 0);
+//				  k++;
+//				  break;
+//
+//			  case 4:
+//				  Send_CAN_Command(CON_ODO,0);
+//				  Send_CAN_Command(CON_SPEED2, 0);
+//				  k++;
+//				  break;
+//
+//			  case 5:
+//				  Send_CAN_Command(CON_SPEED2, 0);
+//				  k++;
+//				  break;
+//
+//			  case 6:
+//				  Send_CAN_Command(CON_UNKOWN_1,0);
+//				  Send_CAN_Command(CON_SPEED2, 0);
+//				  k++;
+//				  break;
+//			  case 7:
+//				  Send_CAN_Command(CON_ALIVE, 0);
+//				  Send_CAN_Command(CON_SPEED2, 0);
+//				  k++;
+//				  break;
+//
+//			  case 8:
+//				  Send_CAN_Command(CON_SPEED1, 0);
+//				  Send_CAN_Command(CON_SPEED2, 0);
+//				  k++;
+//				  break;
+//
+//			  case 9:
+//				  Send_CAN_Command(CON_SPEED2,0);
+//				  k=0;
+//				  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
+//				  break;
+//			  }
 
 
 		  }//end slow loop
-	  }// end timer 1 kHz loop
+
 
 
 
 	  if(CAN_RX_Flag){
 
 
-		  //UART_Tx_async_flag=1;
-
-		  if(RxHeader.ExtId == DIS_ASSIST){
-			  DIS_Flag=1;
-
-		  }
-
-			  if( UART_TX_Flag && UART_RX_Buffer[0] && !UART_RX_Buffer[2]){//print out received CAN message
-
-				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%lu, %lu, %lu, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n",
-						  	  	  	  RxHeader.StdId,
-									  RxHeader.ExtId,
-									  RxHeader.IDE,
-									  (uint16_t)RxHeader.RTR,
-									  (uint16_t)RxHeader.DLC,
-						  			  RxData[0],
-									  RxData[1],
-									  RxData[2],
-									  RxData[3],
-									  RxData[4],
-									  RxData[5],
-									  RxData[6],
-									  RxData[7]
 
 
+				  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%d, %d, %d, %d\r\n",
+						  			  (RxData[0]<<8)+RxData[1],
+									  (RxData[2]<<8)+RxData[3],
+									  (RxData[4]<<8)+RxData[5],
+									  (RxData[6]<<8)+RxData[7]
 				  			  			  );
 
 
 				  			  			HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, UART_Tx_lenght);
 				  			  			UART_TX_Flag=0;
 
-			  }
 
-			  else if(UART_TX_Flag && !UART_RX_Buffer[0] && UART_RX_Buffer[2]){//print out Array of ExtID
 
-				  for(int l=0; l<500; l++){
-					  UART_TX_Flag=0;
-					  UART_Tx_lenght=sprintf(UART_TX_Buffer, "%d, %d, %lu\r\n", l, (uint16_t)ExtID[l][0], ExtID[l][1]);
-					  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&UART_TX_Buffer, UART_Tx_lenght);
-					  while(!UART_TX_Flag);
-				  }
-
-			  }
 
 
 
@@ -342,7 +323,7 @@ int main(void)
 		  }//End CAN Rx
 
 
-	  }
+	  }//end while loop
 
 
     /* USER CODE END WHILE */
@@ -350,7 +331,7 @@ int main(void)
 
 
     /* USER CODE BEGIN 3 */
-  } //end while loop
+  } //end main
   /* USER CODE END 3 */
 
 
@@ -431,10 +412,10 @@ static void MX_CAN_Init(void)
     sFilterConfig.FilterBank = 0;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
-    sFilterConfig.FilterIdHigh = 0x0000;
-    sFilterConfig.FilterIdLow = 0x0000;
-    sFilterConfig.FilterMaskIdHigh = 0x0000;
-    sFilterConfig.FilterMaskIdLow = 0x0000;
+    sFilterConfig.FilterIdHigh = (FILTER_ID >> 16);
+    sFilterConfig.FilterIdLow = (FILTER_ID & 0xFFFF);
+    sFilterConfig.FilterMaskIdHigh = (FILTER_MASK >> 16);
+    sFilterConfig.FilterMaskIdLow = (FILTER_MASK & 0xFFFF);
     sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
     sFilterConfig.FilterActivation = ENABLE;
     sFilterConfig.SlaveStartFilterBank = 14;
@@ -537,7 +518,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 256000;
+  huart1.Init.BaudRate = 1382400;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -692,22 +673,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle)
     Error_Handler();
   }
 
-  if(UART_RX_Buffer[2]){ //just collect ExtIds in Array
-	  if(!CAN_RX_Flag){
-	  ExtID[ExtID_counter][1]=RxHeader.ExtId;
-	  ExtID[ExtID_counter][0]=timeCounter;
-	  timeCounter=0;
-	  HAL_GPIO_TogglePin(Onboard_LED_GPIO_Port, Onboard_LED_Pin);
-	  if (ExtID_counter<495){
-		  ExtID_counter++;
-  	  	  }
-	  else {
-		  ExtID_counter=0;
-		  CAN_RX_Flag=1;
-  	  	  }
-	  }
-  }
-  else CAN_RX_Flag=1;
+
+CAN_RX_Flag=1;
 
 
 }
